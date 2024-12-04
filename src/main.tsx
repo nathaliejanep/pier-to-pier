@@ -9,19 +9,21 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
-import LogEvent from './pages/LogEvent.tsx';
-import EventHistory from './pages/EventHistory.tsx';
 import Home from './pages/Home.tsx';
 import NotFound from './pages/NotFound.tsx';
-import EventDetails from './pages/EventDetails.tsx';
+import ShipmentDetails from './pages/ShipmentDetails.tsx';
+import { List } from './components/Shipment/';
+import EventNew from './pages/EventNew.tsx';
+import ShipmentNew from './pages/ShipmentNew.tsx';
 
 const router = createHashRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index element={<Home />} />
-      <Route path="/logevent" element={<LogEvent />} />
-      <Route path="/eventhistory" element={<EventHistory />} />
-      <Route path="eventhistory/:id" element={<EventDetails />} />
+      <Route path="/newshipment" element={<ShipmentNew />} />
+      <Route path="/logevent" element={<EventNew />} />
+      <Route path="/shipments" element={<List />} />
+      <Route path="/shipments/:id" element={<ShipmentDetails />} />
       {/* <Route path="*" element={<Navigate replace to="notfound" />} /> */}
       <Route path="*" element={<NotFound />} />
     </Route>,

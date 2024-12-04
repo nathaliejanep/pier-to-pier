@@ -11,7 +11,7 @@ const TopNav = () => {
           <NavLink to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
             <Pier2PierIcon />
             <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-              <h1>Port Chain</h1>
+              <h1>Pier2Pier</h1>
             </span>
           </NavLink>
           {/* Hambuger menu */}
@@ -55,6 +55,14 @@ const TopNav = () => {
               </li>
               <li>
                 <NavLink
+                  to="/newshipment"
+                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                >
+                  New Shipment
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to="/logevent"
                   className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                 >
@@ -63,10 +71,10 @@ const TopNav = () => {
               </li>
               <li>
                 <NavLink
-                  to="/eventhistory"
+                  to="/shipments"
                   className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                 >
-                  Event History
+                  Shipments
                 </NavLink>
               </li>
             </ul>

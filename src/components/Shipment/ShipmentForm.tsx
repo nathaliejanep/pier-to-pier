@@ -1,9 +1,9 @@
-import '../styles/EventForm.css';
+import '../../styles/ShipmentForm.css';
 import React, { useEffect, useState } from 'react';
-import { commands } from '../server/commands';
-import { sql } from '../server/database';
+import { commands } from '../../server/commands';
+import { sql } from '../../server/database';
 
-const EventForm: React.FC = () => {
+const ShipmentForm: React.FC = () => {
   const [hash, setHash] = useState('');
   useEffect(() => {
     console.log('----HASH', hash);
@@ -32,7 +32,7 @@ const EventForm: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await sql.insertRecord('2', hash);
+    await sql.insertRecord(hash);
 
     // If the form is valid, do something with the form data (e.g., send it to an API)
     console.log('Form submitted successfully with data: ', formData);
@@ -148,4 +148,4 @@ const EventForm: React.FC = () => {
   );
 };
 
-export default EventForm;
+export default ShipmentForm;

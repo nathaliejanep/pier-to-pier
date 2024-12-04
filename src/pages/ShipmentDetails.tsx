@@ -1,3 +1,4 @@
+// Log and view event details
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { sql } from '../server/database';
@@ -7,8 +8,12 @@ interface EventDetailsProps {
   ID: string;
   HASH: string;
 }
+// TODO:
+// Shipment information at the top (e.g., ID, destination, status, etc.).
+// List of associated events.
+// Button to add an event.
 
-const EventDetails: React.FC = () => {
+const ShipmentDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>(); // Get the ID from the URL params
   const [details, setDetails] = useState<EventDetailsProps | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,4 +78,4 @@ const EventDetails: React.FC = () => {
   );
 };
 
-export default EventDetails;
+export default ShipmentDetails;

@@ -1,4 +1,5 @@
 import { createContext, useRef, useEffect } from 'react';
+import { sql } from './server/database';
 
 export const appContext = createContext({} as any);
 
@@ -14,6 +15,10 @@ const AppProvider = ({ children }: IProps) => {
       (window as any).MDS.init((msg: any) => {
         if (msg.event === 'inited') {
           console.log('inited');
+          sql.createTable();
+          sql.createShipmentTable();
+          sql.createBOLTable();
+          sql.createEventLogTable();
         }
       });
     }

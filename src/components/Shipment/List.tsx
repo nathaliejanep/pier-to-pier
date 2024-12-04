@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { sql } from '../server/database';
 import { NavLink } from 'react-router-dom';
+import { sql } from '../../server/database';
 
-const EventHistory: React.FC = () => {
+// List of shipments
+const List: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +22,10 @@ const EventHistory: React.FC = () => {
     setError(null); // Reset error state
     try {
       const records: [] = await sql.getRecords();
+      // await sql.insertRecordEvent('f', 'f', 's', 's');
+      // const morerecords: [] = await sql.getEventRecords();
+
+      // console.log('morerecords', morerecords);
       setHistory(records);
     } catch (error) {
       console.error('Error fetching records:', error);
@@ -29,10 +34,9 @@ const EventHistory: React.FC = () => {
       setLoading(false); // End loading state
     }
   };
-
   return (
     <div className="max-w-7xl mx-auto p-4">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Event History</h1>
+      <h1 className="text-3xl font-semibold text-gray-900 mb-4">Shipments</h1>
 
       {loading && (
         <div className="flex justify-center items-center">
@@ -62,7 +66,7 @@ const EventHistory: React.FC = () => {
                   <td className="px-6 py-4">{record.ID}</td>
                   <td className="px-6 py-4">
                     <NavLink
-                      to={`/eventhistory/${record.ID}`}
+                      to={`/shipments/${record.ID}`}
                       className="text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md inline-block text-center transition-all duration-300"
                     >
                       Details
@@ -78,5 +82,4 @@ const EventHistory: React.FC = () => {
     </div>
   );
 };
-
-export default EventHistory;
+export default List;

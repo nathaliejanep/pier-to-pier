@@ -1,4 +1,4 @@
-# Pier-to-Pier
+# Pier2Pier
 
 - `npm install` to install all dependencies
 - `npm run dev` to start dev server, make sure to edit .env as displayed with .env.example

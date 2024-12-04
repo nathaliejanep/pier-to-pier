@@ -4,7 +4,7 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="bg-blue-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h1 className="text-5xl font-semibold mb-6">Welcome to Port Chain</h1>
+          <h1 className="text-5xl font-semibold mb-6">Welcome to Pier2Pier</h1>
           <p className="text-xl mb-8">
             Connecting logistics and supply chain with blockchain technology for seamless, secure,
             and transparent operations.
@@ -48,11 +48,11 @@ const Home: React.FC = () => {
       {/* About Section */}
       <section id="about" className="bg-gray-100 py-20">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6">About Port Chain</h2>
+          <h2 className="text-3xl font-semibold text-gray-900 mb-6">About Pier2Pier</h2>
           <p className="text-xl text-gray-700 mb-6">
-            Port Chain is revolutionizing the logistics and supply chain industry by using
-            blockchain technology. We provide a seamless and secure way to manage supply chain
-            processes, improving transparency, efficiency, and trust.
+            Pier2Pier is revolutionizing the logistics and supply chain industry by using blockchain
+            technology. We provide a seamless and secure way to manage supply chain processes,
+            improving transparency, efficiency, and trust.
           </p>
           <a
             href="#getstarted"
