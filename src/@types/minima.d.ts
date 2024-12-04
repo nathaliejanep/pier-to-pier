@@ -1,3 +1,4 @@
+// TODO delete ShippingFormData
 interface ShippingFormData {
   sourcePort: string;
   destinationPort: string;
@@ -10,7 +11,8 @@ interface ShippingFormData {
 }
 
 interface Shipment {
-  id: number;
+  id: string;
+  initialHash: string;
   originPort: string;
   destinationPort: string;
   shipperName: string;
@@ -22,7 +24,8 @@ interface Shipment {
 }
 
 interface BillOfLading {
-  id: number;
+  id: string;
+  initialHash: string;
   shipmentId: number;
   shipperName: string;
   consigneeName: string;
@@ -38,7 +41,9 @@ interface BillOfLading {
 }
 
 interface EventLog {
-  id: number;
+  id: string;
+  hash: string;
+  previousHash: string;
   shipmentId: number;
   eventType: string;
   eventDetails: string;

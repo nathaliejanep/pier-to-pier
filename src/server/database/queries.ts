@@ -18,7 +18,7 @@ export const sql = {
       `
       CREATE TABLE IF NOT EXISTS shipments (
         ID UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-        HASH varchar(1024) NOT NULL,
+        INITIAL_HASH varchar(1024) NOT NULL,
         ORIGIN_PORT varchar(255),
         DESTINATION_PORT varchar(255),
         SHIPPER_NAME varchar(255),
@@ -36,7 +36,7 @@ export const sql = {
       `
       CREATE TABLE IF NOT EXISTS bills_of_lading (
         ID UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-        HASH varchar(1024) NOT NULL,
+        INITIAL_HASH varchar(1024) NOT NULL,
         SHIPMENT_ID int,
         SHIPPER_NAME varchar(255),
         CONSIGNEE_NAME varchar(255),
@@ -60,6 +60,7 @@ export const sql = {
       CREATE TABLE IF NOT EXISTS event_logs (
         ID UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
         HASH varchar(1024) NOT NULL,
+        PREVIOUS_HASH varchar(1024) NOT NULL,
         SHIPMENT_ID int,
         EVENT_TYPE varchar(255),
         EVENT_DETAILS text,
