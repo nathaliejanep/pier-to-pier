@@ -49,3 +49,13 @@ interface EventLog {
   eventDetails: string;
   createdAt: string;
 }
+
+interface TransactionResponse {
+  status: boolean;
+  pendinguid: string;
+  response?: {
+    txpowid: string;
+    // Add other fields
+  };
+  error?: string;
+}

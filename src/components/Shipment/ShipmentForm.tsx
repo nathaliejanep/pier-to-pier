@@ -1,13 +1,25 @@
 import '../../styles/ShipmentForm.css';
 import React, { useEffect, useState } from 'react';
-import { commands } from '../../server/commands';
 import { sql } from '../../server/database';
+import { commands } from '../../server/mds';
+import { getBlock } from '../../utilities/api';
+import { config } from '../../config/config';
 
 const ShipmentForm: React.FC = () => {
   const [hash, setHash] = useState('');
   useEffect(() => {
     console.log('----HASH', hash);
   }, [hash]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const blockData = await getBlock(config.ABC_HASH);
+      console.log(blockData);
+    };
+
+    fetchData(); // Calling the async function here
+  }, []);
+
   // Initial state for form fields and errors
   const [formData, setFormData] = useState<ShippingFormData>({
     sourcePort: '',
