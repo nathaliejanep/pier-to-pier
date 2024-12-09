@@ -13,7 +13,7 @@ interface ShippingFormData {
 interface Shipment {
   id: string;
   initialHash: string;
-  originPort: string;
+  sourcePort: string;
   destinationPort: string;
   shipperName: string;
   consigneeName: string;
@@ -24,30 +24,28 @@ interface Shipment {
 }
 
 interface BillOfLading {
-  id: string;
-  initialHash: string;
-  shipmentId: number;
-  shipperName: string;
-  consigneeName: string;
-  carrierName: string;
-  goodsDescription: string;
-  shippingMode: string;
-  containerDetails: string;
-  portOfLoading: string;
-  portOfDischarge: string;
-  freightCharges: string;
-  customsDetails: string;
-  createdAt: string;
+  ID: string;
+  INITIAL_HASH?: string;
+  SHIPPER_NAME: string;
+  CONSIGNEE_NAME: string;
+  CARRIER_NAME: string;
+  GOODS_DESCRIPTION: string;
+  CONTAINER_DETAILS: string;
+  PORT_OF_LOADING: string;
+  PORT_OF_DISCHARGE: string;
+  FREIGHT_CHARGES: string;
+  CUSTOMS_DETAILS: string;
+  CREATED_AT?: string;
 }
 
 interface EventLog {
-  id: string;
-  hash: string;
-  previousHash: string;
-  shipmentId: number;
-  eventType: string;
-  eventDetails: string;
-  createdAt: string;
+  ID?: string;
+  HASH?: string;
+  PREVIOUS_HASH?: string;
+  BOL_ID?: string;
+  EVENT_TYPE: string;
+  EVENT_DETAILS: string;
+  CREATED_AT?: string;
 }
 
 interface TransactionResponse {

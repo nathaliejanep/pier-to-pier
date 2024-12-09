@@ -1,9 +1,9 @@
-import { ShipmentForm } from '../components/Shipment';
+import { BOLForm } from '../components/Shipment';
 
 const ShipmentNew: React.FC = () => {
   return (
-    <div>
-      <ShipmentForm />
+    <div className="my-[200px]">
+      <BOLForm />
     </div>
   );
 };

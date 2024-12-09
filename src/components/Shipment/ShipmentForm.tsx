@@ -2,24 +2,8 @@ import '../../styles/ShipmentForm.css';
 import React, { useEffect, useState } from 'react';
 import { sql } from '../../server/database';
 import { commands } from '../../server/mds';
-import { getBlock } from '../../utilities/api';
-import { config } from '../../config/config';
 
 const ShipmentForm: React.FC = () => {
-  const [hash, setHash] = useState('');
-  useEffect(() => {
-    console.log('----HASH', hash);
-  }, [hash]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const blockData = await getBlock(config.ABC_HASH);
-      console.log(blockData);
-    };
-
-    fetchData(); // Calling the async function here
-  }, []);
-
   // Initial state for form fields and errors
   const [formData, setFormData] = useState<ShippingFormData>({
     sourcePort: '',
@@ -44,13 +28,13 @@ const ShipmentForm: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await sql.insertRecord(hash);
 
-    // If the form is valid, do something with the form data (e.g., send it to an API)
+    // If the form is valid, send it to sql and create txn with state:hash
     console.log('Form submitted successfully with data: ', formData);
     const hashedData = await commands.hashData(formData);
-    setHash(hashedData);
+
     console.log('hashedData', hashedData);
+    await commands.createTxn(hashedData);
     // Reset form
     setFormData({
       sourcePort: '',
