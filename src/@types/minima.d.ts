@@ -40,6 +40,7 @@ interface BillOfLading {
 
 interface EventLog {
   ID?: string;
+  EVENT_PREVIOUS_ID?: string;
   HASH?: string;
   PREVIOUS_HASH?: string;
   BOL_ID?: string;

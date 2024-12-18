@@ -21,15 +21,11 @@ const List: React.FC = () => {
     setLoading(true); // Set loading state
     setError(null); // Reset error state
     try {
-      const records: [] = await sql.getRecords();
-      // await sql.insertRecordEvent('f', 'f', 's', 's');
-      // const morerecords: [] = await sql.getEventRecords();
-
-      // console.log('morerecords', morerecords);
+      const records: [] = await sql.getBOLRecords();
       setHistory(records);
     } catch (error) {
       console.error('Error fetching records:', error);
-      setError('Failed to load event history'); // Set error message
+      setError('Failed to load event history');
     } finally {
       setLoading(false); // End loading state
     }
@@ -72,7 +68,7 @@ const List: React.FC = () => {
                       Details
                     </NavLink>
                   </td>
-                  <td className="px-6 py-4">{record.HASH}</td>
+                  <td className="px-6 py-4">{record.INITIAL_HASH}</td>
                 </tr>
               ))}
             </tbody>

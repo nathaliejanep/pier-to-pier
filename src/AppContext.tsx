@@ -9,16 +9,18 @@ interface IProps {
 const AppProvider = ({ children }: IProps) => {
   const loaded = useRef(false);
 
+  const createTables = async () => {
+    await sql.createBOLTable();
+    await sql.createEventLogTable();
+  };
+
   useEffect(() => {
     if (!loaded.current) {
       loaded.current = true;
       (window as any).MDS.init((msg: any) => {
         if (msg.event === 'inited') {
           console.log('inited');
-          sql.createTable();
-          sql.createShipmentTable();
-          sql.createBOLTable();
-          sql.createEventLogTable();
+          createTables();
         }
       });
     }

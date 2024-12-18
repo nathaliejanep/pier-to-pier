@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { config } from '../../config/config';
 import { getBlockData } from '../../utilities/api';
 import { sql } from '../../server/database';
+import { commands } from '../../server/mds';
+import { v4 as uuidv4 } from 'uuid';
 
 // Component for logging events
 const EventForm: React.FC = () => {
   const [formData, setFormData] = useState<EventLog>({
+    ID: uuidv4(),
     BOL_ID: '',
     EVENT_TYPE: 'Departure', // Default event type
     EVENT_DETAILS: '',
@@ -15,26 +18,19 @@ const EventForm: React.FC = () => {
   useEffect(() => {
     fetchData();
     getShipments();
-    // sql.createEventLogTable();
-    // sql.dropTable('event_logs');
   }, []);
 
   const fetchData = async () => {
+    // TODO findHash in API
     const blockData = await getBlockData(config.ABC_HASH);
     console.log(blockData);
   };
 
   const getShipments = async () => {
     const BOLData = await sql.getBOLRecords();
-    const eventData = await sql.getEventRecords();
-    const eventsByBOLId = await sql.getEventsByBOLId('123456');
-    console.log('eventsByBOLId', eventsByBOLId);
-
     setBOLDataList(BOLData);
-    console.log(BOLData);
-    console.log('eventData', eventData);
   };
-  // Handle form input change
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
@@ -44,25 +40,41 @@ const EventForm: React.FC = () => {
       [name]: value,
     }));
   };
-  // Handle form submission
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Send the event log data to the backend
     try {
-      console.log('Form submitted successfully with data: ', formData);
+      if (formData.BOL_ID) {
+        const latestEvent = await sql.getLatestEventByBOLId(formData.BOL_ID);
 
-      sql.insertRecordEvent(formData);
+        // TODO probably use hash instead of PREV ID
+        const eventWithPreviousId = {
+          ...formData,
+          EVENT_PREVIOUS_ID: latestEvent.length > 0 ? latestEvent[0]?.ID : null,
+        };
+        sql.insertRecordEvent(eventWithPreviousId);
+
+        if (formData.ID) {
+          const event = await sql.getEventById(formData.ID);
+          const hash = await commands.hashData(event);
+
+          await sql.updateEventHash(hash, formData.ID);
+        }
+      }
+
       // Reset form
       setFormData({
         BOL_ID: '',
         EVENT_TYPE: 'Departure',
         EVENT_DETAILS: '',
       });
-      // alert('Event logged successfully!');
+
+      // TODO send message to UI
+      console.log('Form submitted successfully with data: ', formData);
     } catch (error) {
       console.error('Failed to log event: ', error);
-      alert('Error logging event.');
     }
   };
 

@@ -6,16 +6,16 @@ import { sql } from '../../server/database';
 const BOLForm: React.FC = () => {
   // Initial state for form fields and errors
   const [formData, setFormData] = useState<BillOfLading>({
-    ID: '',
-    SHIPPER_NAME: '',
-    CONSIGNEE_NAME: '',
-    CARRIER_NAME: '',
-    GOODS_DESCRIPTION: '',
-    CONTAINER_DETAILS: '',
-    PORT_OF_LOADING: '',
-    PORT_OF_DISCHARGE: '',
-    FREIGHT_CHARGES: '',
-    CUSTOMS_DETAILS: '',
+    ID: '1',
+    SHIPPER_NAME: 'Bob',
+    CONSIGNEE_NAME: 'Alice',
+    CARRIER_NAME: 'Maersk',
+    GOODS_DESCRIPTION: 'Good goods description',
+    CONTAINER_DETAILS: 'Details about container',
+    PORT_OF_LOADING: 'Gothenburg',
+    PORT_OF_DISCHARGE: 'Amsterdam',
+    FREIGHT_CHARGES: '100',
+    CUSTOMS_DETAILS: 'Special details',
   });
 
   // Handle form input change
@@ -34,9 +34,10 @@ const BOLForm: React.FC = () => {
     // If the form is valid, send it to sql and create txn with state:hash
 
     try {
-      const hashedData = await commands.hashData(formData);
+      // TODO send resthash to blockchain below
+      // const hashedData = await commands.hashData(formData);
 
-      console.log('hashedData', hashedData);
+      // console.log('hashedData', hashedData);
       //   await commands.createTxn(hashedData);
       // Reset form
       setFormData({
@@ -51,11 +52,17 @@ const BOLForm: React.FC = () => {
         FREIGHT_CHARGES: '',
         CUSTOMS_DETAILS: '',
       });
-      //   sql.insertRecordBOL(formData);
+      sql.insertRecordBOL(formData);
       const BOLData = await sql.getBOLRecords();
 
       // Hash rest
+      if (BOLData.length > 0) {
+      }
       const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData[0];
+      const { ID } = BOLData[0];
+      const hashRest = await commands.hashData(rest);
+
+      await sql.updateBOLHash(hashRest, ID);
 
       console.log('Form submitted successfully with data: ', formData);
     } catch (err) {

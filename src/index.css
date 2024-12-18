@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+.no-wrap {
+  white-space: nowrap;
+  overflow: hidden; /* Hide overflowed text */
+  text-overflow: ellipsis; /* Show ellipsis for overflowed content */
+}
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

@@ -2,7 +2,7 @@ import '../../styles/ShipmentForm.css';
 import React, { useEffect, useState } from 'react';
 import { sql } from '../../server/database';
 import { commands } from '../../server/mds';
-
+// TODO delete this file
 const ShipmentForm: React.FC = () => {
   // Initial state for form fields and errors
   const [formData, setFormData] = useState<ShippingFormData>({

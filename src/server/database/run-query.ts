@@ -2,6 +2,9 @@ export const runQuery = (query: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     try {
       (window as any).MDS.sql(query, function (response: any) {
+        // if (response) {
+        //   console.log('SQL query response:', response);
+        // }
         if (response.status) {
           if (response.rows) {
             console.log('SQL query resolved:', response.rows);
