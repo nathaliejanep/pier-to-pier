@@ -42,7 +42,7 @@ interface EventLog {
   ID?: string;
   EVENT_PREVIOUS_ID?: string;
   HASH?: string;
-  PREVIOUS_HASH?: string;
+  EVENT_PREVIOUS_HASH?: string;
   BOL_ID?: string;
   EVENT_TYPE: string;
   EVENT_DETAILS: string;

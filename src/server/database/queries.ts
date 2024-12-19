@@ -28,7 +28,7 @@ export const sql = {
       CREATE TABLE IF NOT EXISTS event_logs (
         ID varchar(50),
         EVENT_HASH varchar(1024),
-        EVENT_PREVIOUS_ID varchar(50),
+        EVENT_PREVIOUS_HASH varchar(1024),
         BOL_ID int,
         EVENT_TYPE varchar(255),
         EVENT_DETAILS text,
@@ -77,19 +77,19 @@ export const sql = {
   },
 
   insertRecordEvent: (data: EventLog) => {
-    const { ID, EVENT_PREVIOUS_ID, BOL_ID, EVENT_TYPE, EVENT_DETAILS } = data;
+    const { ID, EVENT_PREVIOUS_HASH, BOL_ID, EVENT_TYPE, EVENT_DETAILS } = data;
     runQuery(
       `
       INSERT INTO event_logs (
         ID,
-        EVENT_PREVIOUS_ID,
+        EVENT_PREVIOUS_HASH,
         BOL_ID,
         EVENT_TYPE,
         EVENT_DETAILS
       )
       VALUES (
         '${ID}',
-        '${EVENT_PREVIOUS_ID}',
+        '${EVENT_PREVIOUS_HASH}',
         '${BOL_ID}',
         '${EVENT_TYPE}',
         '${EVENT_DETAILS}'
@@ -145,7 +145,7 @@ export const sql = {
           e.EVENT_HASH,
           e.EVENT_TYPE,
           e.EVENT_DETAILS,
-          e.EVENT_PREVIOUS_ID,
+          e.EVENT_PREVIOUS_HASH,
           e.CREATED_AT AS EVENT_CREATED_AT
         FROM
           bills_of_lading b
@@ -161,7 +161,7 @@ export const sql = {
   getLatestEventByBOLId: (bolId: string) =>
     runQuery(
       `
-        SELECT ID, EVENT_TYPE, CREATED_AT
+        SELECT EVENT_HASH
         FROM event_logs
         WHERE BOL_ID = '${bolId}'
         ORDER BY CREATED_AT DESC

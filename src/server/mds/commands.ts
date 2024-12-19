@@ -27,6 +27,7 @@ const createTxn = (hash: string): Promise<TransactionResponse> => {
  * @param {ShippingFormData} metaData The data to be hashed.
  * @returns {Promise<string>} A promise that resolves a string of the hash.
  */
+// TODO add metaData type for EventLog
 const hashData = (metaData: BillOfLading): Promise<string> => {
   return new Promise((resolve, reject) => {
     const stringMetaData = JSON.stringify(metaData);

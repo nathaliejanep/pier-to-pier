@@ -9,9 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
 const EventForm: React.FC = () => {
   const [formData, setFormData] = useState<EventLog>({
     ID: uuidv4(),
-    BOL_ID: '',
+    BOL_ID: '1',
     EVENT_TYPE: 'Departure', // Default event type
-    EVENT_DETAILS: '',
+    EVENT_DETAILS: 'Details',
   });
   const [BOLDataList, setBOLDataList] = useState<BillOfLading[]>([]);
 
@@ -48,11 +48,11 @@ const EventForm: React.FC = () => {
     try {
       if (formData.BOL_ID) {
         const latestEvent = await sql.getLatestEventByBOLId(formData.BOL_ID);
-
+        console.log('latestEvent', latestEvent);
         // TODO probably use hash instead of PREV ID
         const eventWithPreviousId = {
           ...formData,
-          EVENT_PREVIOUS_ID: latestEvent.length > 0 ? latestEvent[0]?.ID : null,
+          EVENT_PREVIOUS_HASH: latestEvent.length > 0 ? latestEvent[0]?.EVENT_HASH : null,
         };
         sql.insertRecordEvent(eventWithPreviousId);
 

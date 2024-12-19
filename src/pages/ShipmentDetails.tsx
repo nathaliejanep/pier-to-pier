@@ -150,9 +150,9 @@ const ShipmentDetails: React.FC = () => {
                     <p className="text-sm text-gray-500 mt-2">
                       <strong>Hash:</strong> {event.EVENT_HASH}
                     </p>
-                    {event.EVENT_PREVIOUS_ID !== 'null' && (
+                    {event.EVENT_PREVIOUS_HASH !== 'null' && (
                       <p className="text-sm text-gray-500 mt-2">
-                        <strong>Previous Event ID:</strong> {event.EVENT_PREVIOUS_ID}
+                        <strong>Previous Hash:</strong> {event.EVENT_PREVIOUS_HASH}
                       </p>
                     )}
                   </li>
