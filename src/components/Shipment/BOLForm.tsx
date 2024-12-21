@@ -1,10 +1,12 @@
 import '../../styles/ShipmentForm.css';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { commands } from '../../server/mds';
 import { sql } from '../../server/database';
+import { appContext } from '../../AppContext';
+import { deployContract } from '../../contracts/contract-action';
 
 const BOLForm: React.FC = () => {
-  // Initial state for form fields and errors
+  const { publicKeys } = useContext(appContext);
   const [formData, setFormData] = useState<BillOfLading>({
     ID: '1',
     SHIPPER_NAME: 'Bob',
@@ -39,6 +41,7 @@ const BOLForm: React.FC = () => {
 
       // console.log('hashedData', hashedData);
       //   await commands.createTxn(hashedData);
+
       // Reset form
       setFormData({
         ID: '',
@@ -53,17 +56,27 @@ const BOLForm: React.FC = () => {
         CUSTOMS_DETAILS: '',
       });
       sql.insertRecordBOL(formData);
-      const BOLData = await sql.getBOLRecords();
+      // const BOLData = await sql.getBOLRecords();
 
-      // Hash rest
-      if (BOLData.length > 0) {
-      }
-      const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData[0];
+      const BOLData = await sql.getBOLById(formData.ID);
+      const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData;
       const { ID } = BOLData[0];
+      // TODO This is not right
+      const hashedTimestamp = await commands.hashData(CREATED_AT);
+      // TODO rename rest
+      console.log('CREATED_AT', CREATED_AT);
+      console.log('hashedTimestamp', hashedTimestamp);
       const hashRest = await commands.hashData(rest);
+      await sql.updateBOLHash(hashRest, formData.ID);
+      // await commands.sendTimestampHash(hashedTimestamp, hashRest);
 
-      await sql.updateBOLHash(hashRest, ID);
+      const isValid = await commands.isValid(hashRest);
+      console.log('check', isValid);
 
+      const { buyer, seller, deleted } = publicKeys;
+      await deployContract(buyer, seller, deleted);
+
+      // TODO add SHIPMENT_IS_VALID
       console.log('Form submitted successfully with data: ', formData);
     } catch (err) {
       console.error('Error submitting BOL:', err);

@@ -1,12 +1,15 @@
-import { createContext, useRef, useEffect } from 'react';
+import { createContext, useRef, useEffect, useState } from 'react';
 import { sql } from './server/database';
+import ContractService from './contracts/ContractService';
 
-export const appContext = createContext({} as any);
+const MDS = (window as any).MDS;
+export const appContext = createContext({ publicKeys: {} as any });
 
 interface IProps {
   children: any;
 }
 const AppProvider = ({ children }: IProps) => {
+  const [publicKeys, setPublicKeys] = useState<PublicKeys>({ buyer: '', seller: '', deleted: '' });
   const loaded = useRef(false);
 
   const createTables = async () => {
@@ -17,7 +20,7 @@ const AppProvider = ({ children }: IProps) => {
   useEffect(() => {
     if (!loaded.current) {
       loaded.current = true;
-      (window as any).MDS.init((msg: any) => {
+      MDS.init((msg: any) => {
         if (msg.event === 'inited') {
           console.log('inited');
           createTables();
@@ -26,13 +29,22 @@ const AppProvider = ({ children }: IProps) => {
     }
   }, [loaded]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const keys: PublicKeys = await ContractService.getPublicKeys();
+        setPublicKeys(keys);
+      } catch (error) {
+        console.error(`getPublicKeys - ${error}`);
+      }
+    })();
+  }, []);
+
   return (
     <appContext.Provider
-      value={
-        {
-          // add some stuff
-        }
-      }
+      value={{
+        publicKeys,
+      }}
     >
       {children}
     </appContext.Provider>

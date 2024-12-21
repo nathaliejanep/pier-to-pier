@@ -1,37 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import ContractService from '../contracts/ContractService';
+import { appContext } from '../AppContext';
 
 const Home: React.FC = () => {
-  const [publicKeys, setPublicKeys] = useState<any[]>([]);
-  let buyerPubKey;
-  let sellerPubKey;
-  let deletePubKey;
-
+  // const [publicKeys, setPublicKeys] = useState<any[]>([]);
+  const { publicKeys } = useContext(appContext);
+  // let buyerPubKey;
+  // let sellerPubKey;
+  // let deletePubKey;
+  const { buyer, seller, deleted } = publicKeys;
   const [contractAddress, setContractAddress] = useState<string>('');
 
   useEffect(() => {
     (async () => {
       try {
-        const keys = await ContractService.getPublicKeys(); // Directly await here
-        setPublicKeys(keys);
+        const keys = await ContractService.getPublicKeys();
+        // setPublicKeys(keys);
       } catch (error) {
         console.error(`getPublicKeys - ${error}`);
       }
-    })(); // Immediately invoke the async function
+    })();
   }, []);
 
-  if (publicKeys.length > 0) {
-    const { buyer, seller, deleted } = publicKeys[0];
+  // if (publicKeys.length > 0) {
+  //   const { buyer, seller, deleted } = publicKeys[0];
 
-    buyerPubKey = buyer;
-    sellerPubKey = seller;
-    deletePubKey = deleted;
-  }
+  //   buyerPubKey = buyer;
+  //   sellerPubKey = seller;
+  //   deletePubKey = deleted;
+  // }
 
   const deployContract = async () => {
     try {
       const address = await ContractService.createContract();
-      await ContractService.sendTxnState(buyerPubKey, sellerPubKey, deletePubKey);
+      await ContractService.sendTxnState(buyer, seller, deleted);
       console.log('address', address);
     } catch (error) {
       console.error(`deployContract - ${error}`);
@@ -67,7 +69,7 @@ const Home: React.FC = () => {
 
   const signTxn = async () => {
     try {
-      await ContractService.sign(buyerPubKey);
+      await ContractService.sign(publicKeys.buyer);
     } catch (error) {
       console.error(`signTxn - ${JSON.stringify(error)}`);
     }
@@ -75,7 +77,7 @@ const Home: React.FC = () => {
 
   const signDelete = async () => {
     try {
-      await ContractService.signDelete(deletePubKey);
+      await ContractService.signDelete(publicKeys.deleted);
     } catch (error) {
       console.error(`signDelete - ${error}`);
     }

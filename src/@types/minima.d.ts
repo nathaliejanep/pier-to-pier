@@ -1,4 +1,4 @@
-// TODO delete ShippingFormData
+// TODO delete ShippingFormData and SHipment?
 interface ShippingFormData {
   sourcePort: string;
   destinationPort: string;
@@ -9,7 +9,6 @@ interface ShippingFormData {
   trackingNumber: string;
   shippingMethod: string;
 }
-
 interface Shipment {
   id: string;
   initialHash: string;
@@ -21,6 +20,12 @@ interface Shipment {
   shippingMode: string;
   status: string;
   createdAt: string;
+}
+
+interface PublicKeys {
+  buyer: string;
+  seller: string;
+  deleted: string;
 }
 
 interface BillOfLading {

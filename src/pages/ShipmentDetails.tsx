@@ -1,19 +1,19 @@
 // Log and view event details
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { sql } from '../server/database';
+import { commands } from '../server/mds';
+import ContractService from '../contracts/ContractService';
+import { appContext } from '../AppContext';
 
 interface EventDetailsProps {
   // TODO: update types
   BOL_ID: string;
   HASH: string;
 }
-// TODO:
-// Shipment information at the top (e.g., ID, destination, status, etc.).
-// List of associated events.
-// Button to add an event.
 
 const ShipmentDetails: React.FC = () => {
+  const { publicKeys } = useContext(appContext);
   const { id } = useParams<{ id: string }>();
   const [shipmentEventData, setShipmentEventData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,12 +33,12 @@ const ShipmentDetails: React.FC = () => {
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
     setError(null); // Reset error state
 
     try {
-      const record = await sql.getEventsByBOLId(id);
-      setShipmentEventData(record);
+      const event = await sql.getEventsByBOLId(id);
+      setShipmentEventData(event);
     } catch (error) {
       console.error('Error fetching events record:', error);
       setError('Failed to load event details');
@@ -63,16 +63,52 @@ const ShipmentDetails: React.FC = () => {
     return <div>No event details found.</div>;
   }
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Event Details</h1>
+  // TODO if(contract deposit paid and not sent)
+  const cancelPayment = async () => {
+    try {
+      await ContractService.createTxnId();
+      await ContractService.cancelPaymentInput();
+      await ContractService.cancelPaymentOutput();
+      await ContractService.inputTxnState(2, 0);
+      await ContractService.inputTxnState(3, 0);
+      // await ContractService.sign(buyerPubKey);
+      // await ContractService.post();
+    } catch (error) {
+      console.error(`cancelPayment - ${error}`);
+    }
+  };
 
+  const signTxn = async () => {
+    try {
+      await ContractService.sign(publicKeys.buyer);
+    } catch (error) {
+      console.error(`signTxn - ${JSON.stringify(error)}`);
+    }
+  };
+
+  const checkHashValid = async () => {
+    const check = await commands.isValid(
+      '0x1F038025838260A23E8A988B3C03937E0482ED228263759D7CC2FF9DEAA90127',
+    );
+    console.log('check', check);
+  };
+
+  return (
+    <div className="container mx-auto">
+      <h1 className="text-2xl font-semibold mb-4">Event Details</h1>
+      <button onClick={checkHashValid}>checkHashValid</button>
       <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
         {/* Shipment Details Section */}
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto">
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold text-gray-800">Shipment Details</h2>
-
+            <button
+              onClick={async () => {
+                await cancelPayment(), await signTxn();
+              }}
+            >
+              Cancel
+            </button>
             <div className="overflow-x-auto rounded-lg">
               <table className="min-w-full table-auto border-collapse bg-gray-300 shadow-md ">
                 <tbody>

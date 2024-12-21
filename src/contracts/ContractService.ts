@@ -35,6 +35,7 @@ const MDS = (window as any).MDS;
 
 class ContractService {
   private static contractAddress: string;
+  // TODO save address to SQL
 
   private static async executeCommand(command: string): Promise<MinimaResponse> {
     return new Promise((resolve, reject) => {
@@ -66,20 +67,20 @@ class ContractService {
     return contractAddress;
   }
 
-  static async getPublicKeys(): Promise<any[]> {
+  // TODO set type and change in other files
+  static async getPublicKeys(): Promise<PublicKeys> {
     const res = await this.executeCommand(`keys`);
-    const publicKeys = [
-      {
-        buyer: res.response.keys[0].publickey,
-        seller: res.response.keys[1].publickey,
-        deleted: res.response.keys[2].publickey,
-      },
-    ];
+    const publicKeys = {
+      buyer: res.response.keys[0].publickey,
+      seller: res.response.keys[1].publickey,
+      deleted: res.response.keys[2].publickey,
+    };
 
     return publicKeys;
   }
 
   static async sendTxnState(
+    // contractAddress:string,
     buyerPubKey: string,
     sellerPubKey: string,
     deletePubKey: string,

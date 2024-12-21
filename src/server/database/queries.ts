@@ -129,6 +129,11 @@ export const sql = {
   getBOLRecords: () => runQuery(`SELECT * FROM bills_of_lading`),
   getEventRecords: () => runQuery(`SELECT * FROM event_logs`),
 
+  getBOLById: (bolId: string) =>
+    runQuery(`
+        SELECT * FROM bills_of_lading
+        WHERE ID = '${bolId}'
+`),
   getEventsByBOLId: (bolId: string) =>
     runQuery(
       `
@@ -168,6 +173,7 @@ export const sql = {
         LIMIT 1
       `,
     ),
+
   getEventById: (id: string) => runQuery(`SELECT * FROM event_logs WHERE id = '${id}'`),
 
   dropTable: (tableName: string) => runQuery(`DROP TABLE ${tableName}`),

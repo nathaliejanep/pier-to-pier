@@ -5,7 +5,6 @@ import { sql } from '../../server/database';
 import { commands } from '../../server/mds';
 import { v4 as uuidv4 } from 'uuid';
 
-// Component for logging events
 const EventForm: React.FC = () => {
   const [formData, setFormData] = useState<EventLog>({
     ID: uuidv4(),
@@ -58,9 +57,17 @@ const EventForm: React.FC = () => {
 
         if (formData.ID) {
           const event = await sql.getEventById(formData.ID);
-          const hash = await commands.hashData(event);
+          console.log('event', event);
+          const eventTime = event[0].CREATED_AT; // TODO rename in SQL
 
-          await sql.updateEventHash(hash, formData.ID);
+          const hashedTimestamp = await commands.hashData(eventTime);
+          const hashedEvent = await commands.hashData(event);
+
+          await sql.updateEventHash(hashedEvent, formData.ID);
+          await commands.sendTimestampHash(hashedTimestamp, hashedEvent);
+
+          const isValid = await commands.isValid(hashedEvent);
+          console.log('check', isValid);
         }
       }
 

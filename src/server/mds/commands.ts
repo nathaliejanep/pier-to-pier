@@ -28,7 +28,7 @@ const createTxn = (hash: string): Promise<TransactionResponse> => {
  * @returns {Promise<string>} A promise that resolves a string of the hash.
  */
 // TODO add metaData type for EventLog
-const hashData = (metaData: BillOfLading): Promise<string> => {
+const hashData = (metaData: BillOfLading | any): Promise<string> => {
   return new Promise((resolve, reject) => {
     const stringMetaData = JSON.stringify(metaData);
 
@@ -45,7 +45,59 @@ const hashData = (metaData: BillOfLading): Promise<string> => {
   });
 };
 
+/**
+ * Sends a timestamp and associated metadata to the blockchain.
+ *
+ * @param hashedTimestamp - The cryptographic hash of the timestamp to record.
+ * @param hashedMetaData - The cryptographic hash of additional metadata to associate with the timestamp.
+ * @returns A promise that resolves with the response from the blockchain command or rejects with an error message.
+ */
+const sendTimestampHash = (hashedTimestamp: string, hashedMetaData: string) => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(
+      `send amount:0.0000001 address:0xDDEEDDEEDDEEDD state:{"0":"${hashedTimestamp}","1":"${hashedMetaData}","2":"0x00"}`,
+      (res) => {
+        if (res) {
+          resolve(res);
+          console.log('Check hash response:', res);
+        } else {
+          reject('Failed to check hash ');
+        }
+      },
+    );
+  });
+};
+
+/**
+ * Validates whether a specific hash exists on the blockchain.
+ *
+ * @param hash - The hash to validate on the blockchain.
+ * @returns A promise that resolves with the response if the hash is found, or rejects with an error message.
+ */
+const isValid = (hash: string): Promise<Boolean> => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(`archive action:addresscheck address:0xDDEEDDEEDDEEDD statecheck:${hash}`, (res) => {
+      if (res) {
+        console.log('res', res);
+        // TODO right now we only look for first, maybe we want to show more instances?
+        if (res.coins.created.length > 0) {
+          const hashOnChain = res.coins.created[0].coin.state[1].data;
+          console.log('hashOnChain', hashOnChain);
+          if (hash === hashOnChain) {
+            resolve(true);
+          }
+        }
+        resolve(false);
+      } else {
+        reject(false); // TODO can we do this
+      }
+    });
+  });
+};
+
 export const commands = {
   createTxn,
   hashData,
+  isValid,
+  sendTimestampHash,
 };
