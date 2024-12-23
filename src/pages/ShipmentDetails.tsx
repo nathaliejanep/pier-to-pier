@@ -1,8 +1,6 @@
-// Log and view event details
 import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { sql } from '../server/database';
-import { commands } from '../server/mds';
 import ContractService from '../contracts/ContractService';
 import { appContext } from '../AppContext';
 
@@ -62,17 +60,19 @@ const ShipmentDetails: React.FC = () => {
   if (!shipmentEventData) {
     return <div>No event details found.</div>;
   }
+  const contractAddress = shipmentEventData[0].CONTRACT_ADDRESS;
+  // TODO implement
+  const txnId = 'cancel';
+  console.log('contractAddress from sql', contractAddress);
 
-  // TODO if(contract deposit paid and not sent)
   const cancelPayment = async () => {
+    const amount = shipmentEventData[0].FREIGHT_CHARGES;
     try {
-      await ContractService.createTxnId();
-      await ContractService.cancelPaymentInput();
-      await ContractService.cancelPaymentOutput();
-      await ContractService.inputTxnState(2, 0);
-      await ContractService.inputTxnState(3, 0);
-      // await ContractService.sign(buyerPubKey);
-      // await ContractService.post();
+      await ContractService.createTxnId(txnId);
+      await ContractService.contractInput(txnId, contractAddress);
+      await ContractService.contractOutput(txnId, amount, contractAddress);
+      await ContractService.inputTxnState(txnId, 2, 1);
+      await ContractService.inputTxnState(txnId, 3, 1);
     } catch (error) {
       console.error(`cancelPayment - ${error}`);
     }
@@ -80,41 +80,49 @@ const ShipmentDetails: React.FC = () => {
 
   const signTxn = async () => {
     try {
-      await ContractService.sign(publicKeys.buyer);
+      await ContractService.sign(txnId, publicKeys.seller);
     } catch (error) {
       console.error(`signTxn - ${JSON.stringify(error)}`);
     }
   };
 
-  const checkHashValid = async () => {
-    const check = await commands.isValid(
-      '0x1F038025838260A23E8A988B3C03937E0482ED228263759D7CC2FF9DEAA90127',
-    );
-    console.log('check', check);
-  };
+  // const checkHashValid = async () => {
+  //   const check = await commands.isValid(
+  //     '0x1F038025838260A23E8A988B3C03937E0482ED228263759D7CC2FF9DEAA90127',
+  //   );
+  //   console.log('check', check);
+  // };
 
+  //  TODO if notloaded show cancel button
+  // if(formData.EVENT_TYPE==='')
   return (
     <div className="container mx-auto">
       <h1 className="text-2xl font-semibold mb-4">Event Details</h1>
-      <button onClick={checkHashValid}>checkHashValid</button>
       <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
         {/* Shipment Details Section */}
         <div className="container mx-auto">
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold text-gray-800">Shipment Details</h2>
-            <button
-              onClick={async () => {
-                await cancelPayment(), await signTxn();
-              }}
-            >
-              Cancel
-            </button>
+            {shipmentEventData[0].EVENT_TYPE === 'Delivered' && (
+              <>
+                <button onClick={cancelPayment}>Withdraw</button>
+                <button onClick={signTxn}>Sign</button>
+              </>
+            )}
             <div className="overflow-x-auto rounded-lg">
               <table className="min-w-full table-auto border-collapse bg-gray-300 shadow-md ">
                 <tbody>
                   <tr className="border-b">
                     <td className="no-wrap  px-4 py-2 font-medium text-gray-700">BOL ID:</td>
                     <td className="px-4 py-2 text-gray-600">{shipmentEventData[0].BOL_ID}</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="no-wrap  px-4 py-2 font-medium text-gray-700">
+                      FREIGHT_CHARGES:
+                    </td>
+                    <td className="px-4 py-2 text-gray-600">
+                      {shipmentEventData[0].FREIGHT_CHARGES}
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="no-wrap px-4 py-2 font-medium text-gray-700">Shipper Name:</td>

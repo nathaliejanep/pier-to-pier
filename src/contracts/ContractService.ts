@@ -1,47 +1,27 @@
-// src/services/MinimaService.ts
-/* State Variables:
-   0 - Total Payment Amount
-   1 - Milestone 1 Percentage (20-30%)
-   2 - Milestone 2 Percentage (50%)
-   3 - Milestone 3 Percentage (20-30%)
-   4 - Current Milestone (0-3)
-   5 - Buyer's Address
-   6 - Seller's Address
-
-   7 - Arbiter's Address (for dispute resolution)
-   8 - Shipment Loaded Confirmation (0 or 1)
-   9 - Shipment Arrived Confirmation (0 or 1)
-   10 - Goods Received Confirmation (0 or 1)
-*/
-
-import { contractScript } from './contract-script';
-
-const CONTRACT_STATE = {
-  TOTAL_AMOUNT: 0,
-  M1_DEPOSIT_PAYMENT: 1,
-  M2_PROGRESS_PAYMENT: 2,
-  M3_FINAL_PAYMENT: 3,
-  CURRENT_MILESTONE: 4,
-  BUYER_ADDRESS: 5,
-  SELLER_ADDRESS: 6,
-};
-
 interface MinimaResponse {
   status: boolean;
   response: any;
   error: any;
-}
+} // TODO move this
 const MDS = (window as any).MDS;
 
 class ContractService {
-  private static contractAddress: string;
-  // TODO save address to SQL
+  private contractAddress: string | null;
+  // public buyer: string | null;
+  // public seller: string | null;
+  // public deleted: string | null;
+  constructor() {
+    this.contractAddress = null;
+    // this.buyer = null;
+    // this.seller = null;
+    // this.deleted = null;
+  }
 
   private static async executeCommand(command: string): Promise<MinimaResponse> {
     return new Promise((resolve, reject) => {
       MDS.cmd(command, (res: MinimaResponse) => {
         if (res.status) {
-          console.log('Contract Res:', res);
+          // console.log('Contract Res:', res);
           resolve(res);
         } else if (res.error === 'This command needs to be confirmed and is now pending..') {
           console.log('Pending res:', res);
@@ -55,78 +35,90 @@ class ContractService {
   }
 
   // TODO change payments and use helper funcs directly
-  static async createContract(): Promise<string> {
+  async createContract(BOLId: string): Promise<string> {
     // Create contract
-    const response = await this.executeCommand(
-      `newscript script:"${contractScript}" trackall:true`,
+    const response = await ContractService.executeCommand(
+      // `newscript script:"LET deposit=PREVSTATE(0) LET totalpayment=PREVSTATE(1) LET shipmentproof=STATE(2) LET deliveryconfirmation=STATE(3) LET buyerpubkey=PREVSTATE(4) LET sellerpubkey=PREVSTATE(5) LET deletepubkey=PREVSTATE(6) LET bolid=${BOLId} LET remainingpayment=totalpayment-deposit IF SIGNEDBY(buyerpubkey) AND @AMOUNT EQ deposit AND shipmentproof EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(sellerpubkey) AND shipmentproof EQ 1 AND deliveryconfirmation EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(buyerpubkey) AND @AMOUNT EQ totalpayment AND shipmentproof EQ 1 AND deliveryconfirmation EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(sellerpubkey) AND deliveryconfirmation EQ 1 THEN RETURN TRUE ENDIF IF SIGNEDBY(deletepubkey) THEN RETURN TRUE ENDIF RETURN FALSE" trackall:true`,
+      `newscript script:"LET deposit=PREVSTATE(0) LET totalpayment=PREVSTATE(1) LET shipmentproof=STATE(2) LET deliveryconfirmation=STATE(3) LET buyerpubkey=PREVSTATE(4) LET sellerpubkey=PREVSTATE(5) LET deletepubkey=PREVSTATE(6) LET bolid=${BOLId} LET remainingpayment=totalpayment-deposit IF SIGNEDBY(buyerpubkey) AND @AMOUNT EQ deposit AND shipmentproof EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(sellerpubkey) AND shipmentproof EQ 1 AND deliveryconfirmation EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(buyerpubkey) AND @AMOUNT EQ remainingpayment AND shipmentproof EQ 1 AND deliveryconfirmation EQ 0 THEN RETURN TRUE ENDIF IF SIGNEDBY(sellerpubkey) AND deliveryconfirmation EQ 1 THEN RETURN TRUE ENDIF IF SIGNEDBY(deletepubkey) THEN RETURN TRUE ENDIF RETURN FALSE" trackall:true`,
     );
-    const contractAddress = response.response.address;
+    const contractAddress = response.response.miniaddress;
     console.log('contractAddress: ', contractAddress);
 
     this.contractAddress = contractAddress;
     return contractAddress;
   }
 
-  // TODO set type and change in other files
-  static async getPublicKeys(): Promise<PublicKeys> {
-    const res = await this.executeCommand(`keys`);
+  async getPublicKeys(): Promise<IPublicKeys> {
+    const res = await ContractService.executeCommand(`keys`);
     const publicKeys = {
       buyer: res.response.keys[0].publickey,
       seller: res.response.keys[1].publickey,
       deleted: res.response.keys[2].publickey,
     };
 
+    // this.buyer = res.response.keys[0].publickey;
+    // this.seller = res.response.keys[1].publickey;
+    // this.deleted = res.response.keys[2].publickey;
     return publicKeys;
   }
 
-  static async sendTxnState(
-    // contractAddress:string,
-    buyerPubKey: string,
-    sellerPubKey: string,
-    deletePubKey: string,
+  async sendTxnState(
+    contractAddress: string,
+    freightCharges: number,
+    publicKeys: IPublicKeys,
   ): Promise<void> {
-    await this.executeCommand(
-      `send address:MxG083F4E5FSYQ1SVNAQYV0M45T5V9T913Z03HNZVS6QVF4SFV6H6CZCQ7KW4WD amount:5 state:{"0":"5","1":"5","4":"${buyerPubKey}","5":"${sellerPubKey}","6":"${deletePubKey}"}`,
+    const { buyer, seller, deleted } = publicKeys;
+    const deposit = freightCharges / 4;
+
+    await ContractService.executeCommand(
+      `send address:${contractAddress} amount:${freightCharges} state:{"0":"${deposit}","1":"${freightCharges}","4":"${buyer}","5":"${seller}","6":"${deleted}"}`,
     );
-    // `send address:${contractAddress} amount:${totalAmount} state:{"0":"${depositPayment}","1":"${totalAmount}","4":"0xB47CF7ACA492623083B678DD1184B8E64D30A42160A4411F095E8DEE36A6D302","5":"0xAE3EDC05D24A0EA80076E84831F41C7087C6FC9A6946A645A7DCE13B4B3CCA36"}`,
   }
 
-  static async createTxnId(): Promise<void> {
-    const txnId: string = 'cancel';
+  static async createTxnId(txnId: string): Promise<void> {
     await this.executeCommand(`txncreate id:${txnId}`);
     console.log(`txncreate id:${txnId}`);
   }
 
-  static async cancelPaymentInput(): Promise<void> {
+  static async contractInput(txnId: string, contractAddress: string): Promise<void> {
     const res = await this.executeCommand(`coins`);
 
     const foundCoin = res.response.find((coin) => {
-      return coin.miniaddress === 'MxG083F4E5FSYQ1SVNAQYV0M45T5V9T913Z03HNZVS6QVF4SFV6H6CZCQ7KW4WD';
+      return coin.miniaddress === `${contractAddress}`;
     });
 
-    const coinId = foundCoin.coinid;
+    // TODO make sure both coins have input output
 
-    await this.executeCommand(`txninput id:cancel coinid:${coinId}`);
+    console.log('1: ', `txninput id:${txnId} coinid:${foundCoin.coinid}`);
+    await this.executeCommand(`txninput id:${txnId} coinid:${foundCoin.coinid}`);
   }
 
-  static async cancelPaymentOutput(): Promise<void> {
-    const txnId: string = 'cancel';
-
+  static async contractOutput(
+    txnId: string,
+    amount: number,
+    contractAddress: string,
+  ): Promise<void> {
     // ${buyerAddress}
+    console.log(
+      `2: txnoutput id:${txnId} address:${contractAddress} amount:${amount} storestate:true`,
+    );
+    // TODO get actual address
     await this.executeCommand(
-      `txnoutput id:${txnId} address:MxG083PBN641J8EPZ02BYFJ2F58BHZ60RK5TPC5PMEV9M1YJ9V76HYSABZK5C9G amount:5`,
+      `txnoutput id:${txnId} address:MxG086AKB1RZ8UG3DS6DV3SNHRHMC56BAZZR59MZFBF6RVMMAFHP0T6U4V2EB00 amount:${amount} storestate:true`,
     );
   }
 
-  static async inputTxnState(port, value): Promise<void> {
-    const txnId: string = 'cancel';
+  static async inputTxnState(txnId: string, port, value): Promise<void> {
+    console.log(`2+3: txnstate id:${txnId} port:${port} value:${value}`);
     await this.executeCommand(`txnstate id:${txnId} port:${port} value:${value}`);
   }
 
-  static async sign(buyerPubKey: string): Promise<void> {
-    const txnId: string = 'cancel';
+  static async sign(txnId: string, buyerPubKey: string): Promise<void> {
+    console.log(`4. txnsign id:${txnId} publickey:${buyerPubKey} txnpostauto:true txndelete:true`);
     //BUYER PBKEY
-    await this.executeCommand(`txnsign id:cancel publickey:${buyerPubKey}`);
+    await this.executeCommand(
+      `txnsign id:${txnId} publickey:${buyerPubKey} txnpostauto:true txndelete:true`,
+    );
   }
 
   static async signDelete(deletePubKey: string): Promise<void> {

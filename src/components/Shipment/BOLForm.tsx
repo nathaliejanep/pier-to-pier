@@ -1,12 +1,14 @@
+import React, { useContext, useState } from 'react';
 import '../../styles/ShipmentForm.css';
-import React, { useContext, useEffect, useState } from 'react';
 import { commands } from '../../server/mds';
 import { sql } from '../../server/database';
 import { appContext } from '../../AppContext';
-import { deployContract } from '../../contracts/contract-action';
+import ContractService from '../../contracts/ContractService';
 
 const BOLForm: React.FC = () => {
+  const contractSerivce = new ContractService();
   const { publicKeys } = useContext(appContext);
+
   const [formData, setFormData] = useState<BillOfLading>({
     ID: '1',
     SHIPPER_NAME: 'Bob',
@@ -20,7 +22,6 @@ const BOLForm: React.FC = () => {
     CUSTOMS_DETAILS: 'Special details',
   });
 
-  // Handle form input change
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
@@ -29,6 +30,16 @@ const BOLForm: React.FC = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const deployContract = async (BOLId: string, freightCharges: number, publicKeys: IPublicKeys) => {
+    try {
+      const contractAddress = await contractSerivce.createContract(BOLId);
+      await contractSerivce.sendTxnState(contractAddress, freightCharges, publicKeys);
+      return contractAddress;
+    } catch (error) {
+      console.error(`deployContract - ${error}`);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,26 +66,32 @@ const BOLForm: React.FC = () => {
         FREIGHT_CHARGES: '',
         CUSTOMS_DETAILS: '',
       });
-      sql.insertRecordBOL(formData);
-      // const BOLData = await sql.getBOLRecords();
+
+      // Deploy contract
+      const contractAddress = await deployContract(
+        formData.ID,
+        +formData.FREIGHT_CHARGES,
+        publicKeys,
+      );
+
+      sql.insertRecordBOL({
+        ...formData,
+        CONTRACT_ADDRESS: contractAddress,
+      });
 
       const BOLData = await sql.getBOLById(formData.ID);
       const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData;
-      const { ID } = BOLData[0];
+
       // TODO This is not right
-      const hashedTimestamp = await commands.hashData(CREATED_AT);
+      // const hashedTimestamp = await commands.hashData(CREATED_AT);
+
       // TODO rename rest
-      console.log('CREATED_AT', CREATED_AT);
-      console.log('hashedTimestamp', hashedTimestamp);
       const hashRest = await commands.hashData(rest);
       await sql.updateBOLHash(hashRest, formData.ID);
+
       // await commands.sendTimestampHash(hashedTimestamp, hashRest);
-
-      const isValid = await commands.isValid(hashRest);
-      console.log('check', isValid);
-
-      const { buyer, seller, deleted } = publicKeys;
-      await deployContract(buyer, seller, deleted);
+      // const isValid = await commands.isValid(hashRest);
+      // console.log('check', isValid);
 
       // TODO add SHIPMENT_IS_VALID
       console.log('Form submitted successfully with data: ', formData);

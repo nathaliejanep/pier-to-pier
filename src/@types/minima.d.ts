@@ -22,7 +22,7 @@ interface Shipment {
   createdAt: string;
 }
 
-interface PublicKeys {
+interface IPublicKeys {
   buyer: string;
   seller: string;
   deleted: string;
@@ -41,6 +41,7 @@ interface BillOfLading {
   FREIGHT_CHARGES: string;
   CUSTOMS_DETAILS: string;
   CREATED_AT?: string;
+  CONTRACT_ADDRESS?: string;
 }
 
 interface EventLog {

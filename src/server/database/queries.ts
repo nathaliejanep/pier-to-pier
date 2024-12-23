@@ -17,7 +17,8 @@ export const sql = {
         PORT_OF_DISCHARGE varchar(255),
         FREIGHT_CHARGES varchar(50),
         CUSTOMS_DETAILS text,
-        CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONTRACT_ADDRESS varchar(1024)
       ) 
       `,
     ),
@@ -51,6 +52,7 @@ export const sql = {
       PORT_OF_DISCHARGE,
       FREIGHT_CHARGES,
       CUSTOMS_DETAILS,
+      CONTRACT_ADDRESS,
     } = data;
     runQuery(
       `
@@ -65,12 +67,13 @@ export const sql = {
         PORT_OF_LOADING, 
         PORT_OF_DISCHARGE,
         FREIGHT_CHARGES, 
-        CUSTOMS_DETAILS
+        CUSTOMS_DETAILS,
+        CONTRACT_ADDRESS
       )
       VALUES (
         '${ID}', '${INITIAL_HASH}', '${SHIPPER_NAME}', '${CONSIGNEE_NAME}', '${CARRIER_NAME}',
         '${GOODS_DESCRIPTION}', '${CONTAINER_DETAILS}', '${PORT_OF_LOADING}', '${PORT_OF_DISCHARGE}',
-        '${FREIGHT_CHARGES}', '${CUSTOMS_DETAILS}'
+        '${FREIGHT_CHARGES}', '${CUSTOMS_DETAILS}', '${CONTRACT_ADDRESS}'
       ) 
      `,
     );
@@ -139,6 +142,7 @@ export const sql = {
       `
         SELECT
           b.ID AS BOL_ID,
+          b.FREIGHT_CHARGES,
           b.SHIPPER_NAME,
           b.CONSIGNEE_NAME,
           b.CARRIER_NAME,
@@ -146,6 +150,7 @@ export const sql = {
           b.PORT_OF_LOADING,
           b.PORT_OF_DISCHARGE,
           b.INITIAL_HASH,
+          b.CONTRACT_ADDRESS,
           e.ID AS EVENT_ID,
           e.EVENT_HASH,
           e.EVENT_TYPE,

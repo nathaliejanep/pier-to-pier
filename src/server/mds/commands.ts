@@ -74,30 +74,29 @@ const sendTimestampHash = (hashedTimestamp: string, hashedMetaData: string) => {
  * @param hash - The hash to validate on the blockchain.
  * @returns A promise that resolves with the response if the hash is found, or rejects with an error message.
  */
-const isValid = (hash: string): Promise<Boolean> => {
-  return new Promise((resolve, reject) => {
-    MDS.cmd(`archive action:addresscheck address:0xDDEEDDEEDDEEDD statecheck:${hash}`, (res) => {
-      if (res) {
-        console.log('res', res);
-        // TODO right now we only look for first, maybe we want to show more instances?
-        if (res.coins.created.length > 0) {
-          const hashOnChain = res.coins.created[0].coin.state[1].data;
-          console.log('hashOnChain', hashOnChain);
-          if (hash === hashOnChain) {
-            resolve(true);
-          }
-        }
-        resolve(false);
-      } else {
-        reject(false); // TODO can we do this
-      }
-    });
-  });
-};
+// const isValid = (hash: string): Promise<Boolean> => {
+//   return new Promise((resolve, reject) => {
+//     MDS.cmd(`archive action:addresscheck address:0xDDEEDDEEDDEEDD statecheck:${hash}`, (res) => {
+//       if (res) {
+//         console.log('res', res);
+//         // TODO right now we only look for first, maybe we want to show more instances?
+//         if (res.coins.created.length > 0) {
+//           const hashOnChain = res.coins.created[0].coin.state[1].data;
+//           console.log('hashOnChain', hashOnChain);
+//           if (hash === hashOnChain) {
+//             resolve(true);
+//           }
+//         }
+//         resolve(false);
+//       } else {
+//         reject(false); // TODO can we do this
+//       }
+//     });
+//   });
+// };
 
 export const commands = {
   createTxn,
   hashData,
-  isValid,
   sendTimestampHash,
 };
