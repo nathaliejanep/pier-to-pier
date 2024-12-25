@@ -12,7 +12,7 @@ export const sql = {
         CONSIGNEE_NAME varchar(255),
         CARRIER_NAME varchar(255),
         GOODS_DESCRIPTION text,
-        CONTAINER_DETAILS text,
+        CONTAINER_AMOUNT int,
         PORT_OF_LOADING varchar(255),
         PORT_OF_DISCHARGE varchar(255),
         FREIGHT_CHARGES varchar(50),
@@ -47,7 +47,7 @@ export const sql = {
       CONSIGNEE_NAME,
       CARRIER_NAME,
       GOODS_DESCRIPTION,
-      CONTAINER_DETAILS,
+      CONTAINER_AMOUNT,
       PORT_OF_LOADING,
       PORT_OF_DISCHARGE,
       FREIGHT_CHARGES,
@@ -63,7 +63,7 @@ export const sql = {
         CONSIGNEE_NAME, 
         CARRIER_NAME,
         GOODS_DESCRIPTION, 
-        CONTAINER_DETAILS, 
+        CONTAINER_AMOUNT, 
         PORT_OF_LOADING, 
         PORT_OF_DISCHARGE,
         FREIGHT_CHARGES, 
@@ -72,7 +72,7 @@ export const sql = {
       )
       VALUES (
         '${ID}', '${INITIAL_HASH}', '${SHIPPER_NAME}', '${CONSIGNEE_NAME}', '${CARRIER_NAME}',
-        '${GOODS_DESCRIPTION}', '${CONTAINER_DETAILS}', '${PORT_OF_LOADING}', '${PORT_OF_DISCHARGE}',
+        '${GOODS_DESCRIPTION}', '${CONTAINER_AMOUNT}', '${PORT_OF_LOADING}', '${PORT_OF_DISCHARGE}',
         '${FREIGHT_CHARGES}', '${CUSTOMS_DETAILS}', '${CONTRACT_ADDRESS}'
       ) 
      `,
@@ -147,6 +147,7 @@ export const sql = {
           b.CONSIGNEE_NAME,
           b.CARRIER_NAME,
           b.GOODS_DESCRIPTION,
+          b.CONTAINER_AMOUNT,
           b.PORT_OF_LOADING,
           b.PORT_OF_DISCHARGE,
           b.INITIAL_HASH,

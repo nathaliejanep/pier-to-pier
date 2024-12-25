@@ -35,7 +35,7 @@ interface BillOfLading {
   CONSIGNEE_NAME: string;
   CARRIER_NAME: string;
   GOODS_DESCRIPTION: string;
-  CONTAINER_DETAILS: string;
+  CONTAINER_AMOUNT: number;
   PORT_OF_LOADING: string;
   PORT_OF_DISCHARGE: string;
   FREIGHT_CHARGES: string;

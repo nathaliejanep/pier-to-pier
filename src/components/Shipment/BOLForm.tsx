@@ -15,7 +15,7 @@ const BOLForm: React.FC = () => {
     CONSIGNEE_NAME: 'Alice',
     CARRIER_NAME: 'Maersk',
     GOODS_DESCRIPTION: 'Good goods description',
-    CONTAINER_DETAILS: 'Details about container',
+    CONTAINER_AMOUNT: 1,
     PORT_OF_LOADING: 'Gothenburg',
     PORT_OF_DISCHARGE: 'Amsterdam',
     FREIGHT_CHARGES: '100',
@@ -26,10 +26,19 @@ const BOLForm: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const updatedData = {
+        ...prev,
+        [name]: name === 'CONTAINER_AMOUNT' ? Number(value) : value, // Update CONTAINER_AMOUNT as a number
+      };
+
+      // If CONTAINER_AMOUNT changes, update FREIGHT_CHARGES
+      if (name === 'CONTAINER_AMOUNT') {
+        updatedData.FREIGHT_CHARGES = (Number(value) * 100).toString();
+      }
+
+      return updatedData;
+    });
   };
 
   const deployContract = async (BOLId: string, freightCharges: number, publicKeys: IPublicKeys) => {
@@ -60,7 +69,7 @@ const BOLForm: React.FC = () => {
         CONSIGNEE_NAME: '',
         CARRIER_NAME: '',
         GOODS_DESCRIPTION: '',
-        CONTAINER_DETAILS: '',
+        CONTAINER_AMOUNT: 1,
         PORT_OF_LOADING: '',
         PORT_OF_DISCHARGE: '',
         FREIGHT_CHARGES: '',
@@ -152,12 +161,16 @@ const BOLForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="CONTAINER_DETAILS">CONTAINER DETAILS:</label>
-          <textarea
-            id="CONTAINER_DETAILS"
-            name="CONTAINER_DETAILS"
-            value={formData.CONTAINER_DETAILS}
+          <label htmlFor="CONTAINER_AMOUNT">CONTAINER AMOUNT:</label>
+          <input
+            type="number"
+            id="CONTAINER_AMOUNT"
+            name="CONTAINER_AMOUNT"
+            value={formData.CONTAINER_AMOUNT}
             onChange={handleChange}
+            className="w-full p-2 border border-white rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            min="1"
+            step="1"
           />
         </div>
 
@@ -184,17 +197,6 @@ const BOLForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="FREIGHT_CHARGES">FREIGHT CHARGES:</label>
-          <input
-            type="text"
-            id="FREIGHT_CHARGES"
-            name="FREIGHT_CHARGES"
-            value={formData.FREIGHT_CHARGES}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
           <label htmlFor="CUSTOMS_DETAILS">CUSTOMS DETAILS:</label>
           <textarea
             id="CUSTOMS_DETAILS"
@@ -202,6 +204,13 @@ const BOLForm: React.FC = () => {
             value={formData.CUSTOMS_DETAILS}
             onChange={handleChange}
           />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="FREIGHT_CHARGES">FREIGHT CHARGES:</label>
+          <div id="FREIGHT_CHARGES" className="w-full p-2  text-white">
+            ${formData.FREIGHT_CHARGES}
+          </div>
         </div>
 
         <button type="submit">SUBMIT</button>

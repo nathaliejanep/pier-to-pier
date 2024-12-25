@@ -140,10 +140,10 @@ const ShipmentDetails: React.FC = () => {
                   </tr>
                   <tr className="border-b">
                     <td className="no-wrap px-4 py-2 font-medium text-gray-700">
-                      Goods Description:
+                      Container Amount:
                     </td>
                     <td className="px-4 py-2 text-gray-600">
-                      {shipmentEventData[0].GOODS_DESCRIPTION}
+                      {shipmentEventData[0].CONTAINER_AMOUNT}
                     </td>
                   </tr>
                   <tr className="border-b">
