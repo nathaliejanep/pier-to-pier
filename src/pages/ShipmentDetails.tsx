@@ -5,11 +5,6 @@ import { sql } from '../server/database';
 import ContractService from '../contracts/ContractService';
 import { appContext } from '../AppContext';
 import { stringToBoolean } from '../utilities/converters';
-interface EventDetailsProps {
-  // TODO: update types
-  BOL_ID: string;
-  HASH: string;
-}
 
 const ShipmentDetails: React.FC = () => {
   const { publicKeys } = useContext(appContext);
@@ -59,14 +54,14 @@ const ShipmentDetails: React.FC = () => {
       await ContractService.createTxnId(txnId);
       await ContractService.contractInput(txnId, contractAddress);
 
-      // output to seller
+      // Output to seller
       await ContractService.contractOutput(
         txnId,
         depositAmount,
         'MxG0866Z8TBMWBED17RW385QCAW122YMQW4MP8DAC4PFRUEW9M3ZB9JT80KC03M',
       );
 
-      // remaining output to contract
+      // Remaining output is sent back to contract, otherwise it will be burned
       await ContractService.contractOutput(txnId, remainingAmount, contractAddress);
 
       // Send states to contract
@@ -87,7 +82,6 @@ const ShipmentDetails: React.FC = () => {
     }
   };
 
-  // TODO add withdraw DEPOSIT, need two outputs and send all states.
   const withdrawFunds = async () => {
     const txnId: string = 'lastpayment';
     const contractAddress = shipmentEventData[0].CONTRACT_ADDRESS;
@@ -153,11 +147,11 @@ const ShipmentDetails: React.FC = () => {
   return (
     <div className="container mx-auto mt-10">
       <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
-        {/* Shipment Details Section */}
+        {/* BOL - Shipment Details Section */}
         {shipmentEventData && shipmentEventData.length > 0 && (
           <div className="container mx-auto ">
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800">Shipment Details</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">Bill Of Lading</h2>
 
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full table-auto border-collapse bg-gray-300 shadow-md">
@@ -168,7 +162,7 @@ const ShipmentDetails: React.FC = () => {
                     </tr>
                     <tr className="border-b">
                       <td className="no-wrap  px-4 py-2 font-medium text-gray-700">
-                        FREIGHT_CHARGES:
+                        Freight Charges:
                       </td>
                       <td className="px-4 py-2 text-gray-600">
                         {shipmentEventData[0].FREIGHT_CHARGES}
