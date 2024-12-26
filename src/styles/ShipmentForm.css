@@ -10,7 +10,7 @@
 
 /* Form Container */
 form {
-  background-color: rgb(225, 225, 230);
+  background-color: rgb(242, 242, 245);
   padding: 30px;
   border-radius: 8px;
   width: 800px;
@@ -32,7 +32,7 @@ label {
 input,
 textarea,
 select {
-  background-color: rgb(225, 225, 230);
+  background-color: rgb(242, 242, 245);
 }
 /* Input Fields */
 input[type='text'],
@@ -71,7 +71,7 @@ button {
   width: 100%;
   padding: 10px;
   background-color: #000317 !important;
-  color: #ccc;
+  color: #fff;
   font-size: 16px;
   border: none;
   border-radius: 4px;

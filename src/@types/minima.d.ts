@@ -1,28 +1,4 @@
-// TODO delete ShippingFormData and SHipment?
-interface ShippingFormData {
-  sourcePort: string;
-  destinationPort: string;
-  shipmentId: string;
-  cargoDescription: string;
-  shipmentDate: string;
-  expectedDeliveryDate: string;
-  trackingNumber: string;
-  shippingMethod: string;
-}
-interface Shipment {
-  id: string;
-  initialHash: string;
-  sourcePort: string;
-  destinationPort: string;
-  shipperName: string;
-  consigneeName: string;
-  goodsDescription: string;
-  shippingMode: string;
-  status: string;
-  createdAt: string;
-}
-
-interface IPublicKeys {
+interface PublicKeys {
   buyer: string;
   seller: string;
   deleted: string;

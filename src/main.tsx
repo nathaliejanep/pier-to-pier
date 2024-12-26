@@ -12,10 +12,8 @@ import {
 import Home from './pages/Home.tsx';
 import NotFound from './pages/NotFound.tsx';
 import ShipmentDetails from './pages/ShipmentDetails.tsx';
-import { List } from './components/Shipment/';
 import EventNew from './pages/EventNew.tsx';
 import ShipmentNew from './pages/ShipmentNew.tsx';
-import DEVtool from './components/DEVtool.tsx';
 import Shipments from './pages/Shipments.tsx';
 
 const router = createHashRouter(
@@ -26,7 +24,6 @@ const router = createHashRouter(
       <Route path="/logevent" element={<EventNew />} />
       <Route path="/shipments" element={<Shipments />} />
       <Route path="/shipments/:id" element={<ShipmentDetails />} />
-      <Route path="/devtool" element={<DEVtool />} />
       {/* <Route path="*" element={<Navigate replace to="notfound" />} /> */}
       <Route path="*" element={<NotFound />} />
     </Route>,

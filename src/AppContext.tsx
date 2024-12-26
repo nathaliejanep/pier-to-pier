@@ -9,7 +9,7 @@ interface IProps {
   children: any;
 }
 const AppProvider = ({ children }: IProps) => {
-  const [publicKeys, setPublicKeys] = useState<IPublicKeys>({ buyer: '', seller: '', deleted: '' });
+  const [publicKeys, setPublicKeys] = useState<PublicKeys>({ buyer: '', seller: '', deleted: '' });
   const loaded = useRef(false);
   console.log('publicKeys', publicKeys);
   const contractService = new ContractService();
@@ -33,7 +33,7 @@ const AppProvider = ({ children }: IProps) => {
   useEffect(() => {
     (async () => {
       try {
-        const keys: IPublicKeys = await contractService.getPublicKeys();
+        const keys: PublicKeys = await contractService.getPublicKeys();
         setPublicKeys(keys);
       } catch (error) {
         console.error(`getPublicKeys - ${error}`);

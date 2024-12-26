@@ -33,7 +33,7 @@ class ContractService {
     return contractAddress;
   }
 
-  async getPublicKeys(): Promise<IPublicKeys> {
+  async getPublicKeys(): Promise<PublicKeys> {
     const res = await ContractService.executeCommand(`keys`);
     const publicKeys = {
       buyer: res.response.keys[0].publickey,
@@ -44,7 +44,7 @@ class ContractService {
     return publicKeys;
   }
 
-  async sendTxnState(contractAddress: string, freightCharges: number, publicKeys: IPublicKeys) {
+  async sendTxnState(contractAddress: string, freightCharges: number, publicKeys: PublicKeys) {
     const { buyer, seller, deleted } = publicKeys;
     const deposit = freightCharges / 4;
 

@@ -1,5 +1,3 @@
-// import Decimal from 'decimal.js';
-import './App.css';
 import Footer from './components/Footer';
 import TopNav from './components/TopNav';
 import { Outlet } from 'react-router-dom';
