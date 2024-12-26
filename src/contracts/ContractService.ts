@@ -1,9 +1,3 @@
-interface MinimaResponse {
-  status: boolean;
-  response: any;
-  error: any;
-  pending?: boolean;
-} // TODO move this
 const MDS = (window as any).MDS;
 
 class ContractService {
@@ -23,6 +17,56 @@ class ContractService {
       });
     });
   }
+
+  /* -------------------------------------- SMART CONTRACT SCRIPT --------------------------------------
+
+// Initialize variables from the contract's state
+LET deposit=PREVSTATE(0)                      // Deposit amount.
+LET totalpayment=PREVSTATE(1)                 // Total required payment.
+LET shipmentproof=STATE(2)                    // Indicates if shipment proof is provided (0 or 1).
+LET deliveryconfirmation=STATE(3)             // Indicates if delivery is confirmed (0 or 1).
+LET buyerpubkey=PREVSTATE(4)                  // Buyer's public key.
+LET sellerpubkey=PREVSTATE(5)                 // Seller's public key.
+LET deletepubkey=PREVSTATE(6)                 // Authorized public key to delete the contract.
+LET bolid=${BOLId}                            // Bill of lading identifier for shipment details.
+LET remainingpayment=totalpayment-deposit     // Remaining balance after deposit.
+
+// Approve deposit from the buyer
+IF SIGNEDBY(buyerpubkey) AND                  // Buyer must sign the transaction.
+   @AMOUNT EQ deposit AND                     // Amount must match the deposit.
+   shipmentproof EQ 0                         // Shipment proof must not be provided yet.
+THEN RETURN TRUE                              // Approve deposit.
+ENDIF
+
+// Approve shipment proof submission by the seller
+IF SIGNEDBY(sellerpubkey) AND                 // Seller must sign the transaction.
+   shipmentproof EQ 1 AND                     // Shipment proof must be provided.
+   deliveryconfirmation EQ 0                  // Delivery must not be confirmed yet.
+THEN RETURN TRUE                              // Approve shipment proof submission.
+ENDIF
+
+// Approve remaining payment from the buyer
+IF SIGNEDBY(buyerpubkey) AND                  // Buyer must sign the transaction.
+   @AMOUNT EQ remainingpayment AND            // Amount must match the remaining balance.
+   shipmentproof EQ 1 AND                     // Shipment proof must already be provided.
+   deliveryconfirmation EQ 0                  // Delivery must not be confirmed yet.
+THEN RETURN TRUE                              // Approve remaining payment.
+ENDIF
+
+// Approve delivery confirmation by the seller
+IF SIGNEDBY(sellerpubkey) AND                 // Seller must sign the transaction.
+   deliveryconfirmation EQ 1                  // Delivery confirmation must be provided.
+THEN RETURN TRUE                              // Approve delivery confirmation.
+ENDIF
+
+// Allow contract deletion by an authorized party
+IF SIGNEDBY(deletepubkey) THEN                // Transaction must be signed by the delete public key.
+  RETURN TRUE                                 // Approve contract deletion.
+ENDIF
+
+// Reject any transaction that doesn't meet the above conditions
+RETURN FALSE                                // Default behavior: reject transaction.
+*/
 
   async createContract(BOLId: string): Promise<string> {
     const response = await ContractService.executeCommand(
@@ -67,16 +111,13 @@ class ContractService {
       return coin.miniaddress === `${contractAddress}`;
     });
 
-    // TODO make sure both coins have input output
-
     console.log('1: ', `txninput id:${txnId} coinid:${foundCoin.coinid}`);
     await this.executeCommand(`txninput id:${txnId} coinid:${foundCoin.coinid}`);
   }
 
   static async contractOutput(txnId: string, amount: number, address: string): Promise<void> {
-    // ${buyerAddress}
     console.log(`2: txnoutput id:${txnId} address:${address} amount:${amount} storestate:true`);
-    // TODO get actual address
+
     await this.executeCommand(
       `txnoutput id:${txnId} address:${address} amount:${amount} storestate:true`,
     );
@@ -89,7 +130,6 @@ class ContractService {
 
   static async sign(txnId: string, buyerPubKey: string): Promise<void> {
     console.log(`4. txnsign id:${txnId} publickey:${buyerPubKey} txnpostauto:true txndelete:true`);
-    //BUYER PBKEY
     await this.executeCommand(
       `txnsign id:${txnId} publickey:${buyerPubKey} txnpostauto:true txndelete:true`,
     );

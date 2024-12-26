@@ -6,7 +6,7 @@ const MDS = (window as any).MDS;
  * @param {<string>} hash The hash to send to blockchain with state:99
  * @returns {Promise<TransactionResponse>} A promise that resolves the Transaction Response.
  */
-const createTxn = (hash: string): Promise<TransactionResponse> => {
+const sendHashToChain = (hash: string): Promise<TransactionResponse> => {
   return new Promise((resolve, reject) => {
     MDS.cmd(
       `send address:${config.PIER2PIER_TREASURY} amount:0.000000000001 tokenid:0x00 state:{"99":"${hash}"}`,
@@ -27,7 +27,6 @@ const createTxn = (hash: string): Promise<TransactionResponse> => {
  * @param {ShippingFormData} metaData The data to be hashed.
  * @returns {Promise<string>} A promise that resolves a string of the hash.
  */
-// TODO add metaData type for EventLog
 const hashData = (metaData: BillOfLading | any): Promise<string> => {
   return new Promise((resolve, reject) => {
     const stringMetaData = JSON.stringify(metaData);
@@ -44,65 +43,6 @@ const hashData = (metaData: BillOfLading | any): Promise<string> => {
     });
   });
 };
-
-const sendHashToChain = (hash) => {
-  return new Promise((resolve, reject) => {
-    MDS.cmd(`send address:0x00 amount:0.0000001 state:{"0":"${hash}"}`, (res) => {
-      if (res) {
-        // checkHashOnChain(res.response.txpowid, hash);
-        resolve(res);
-
-        if (res.pending) {
-          MDS.init((msg: any) => {
-            console.log(msg);
-            // if (msg.event === 'MDS_PENDING') {
-            //   console.log('Pending uid: ', msg.event.data.uid);
-            //   resolve(msg.event.data.uid);
-            // }
-          });
-        }
-        console.log('Send hash to chain response:', res);
-      } else {
-        reject('Failed to get send hash');
-      }
-    });
-  });
-
-  // Create a transaction with minimal amount and the hash as state data
-  // var command = `send address:0x00 amount:0.0000001 state:{"0":"${hash}"}`;
-
-  // MDS.cmd(command, function (res) {
-  //   if (res.status) {
-  //     console.log('Transaction sent. TxPOWID:', res.response.txpowid);
-  //     // Store this txpowid for later use
-  //     checkHashOnChain(res.response.txpowid, hash);
-  //   } else {
-  //     console.error('Failed to send transaction:', res.error);
-  //   }
-  // });
-};
-
-function checkHashOnChain(txpowid, hash) {
-  // Wait for a few blocks to ensure the transaction is confirmed
-  setTimeout(function () {
-    MDS.cmd(`txpow txpowid:${txpowid}`, function (res) {
-      if (res.status && res.response.body && res.response.body.txn) {
-        var stateVars = res.response.body.txn.state;
-        var hashFound = stateVars.some(function (stateVar) {
-          return stateVar.data === hash;
-        });
-
-        if (hashFound) {
-          console.log('Hash found on chain!');
-        } else {
-          console.log('Hash not found in transaction state.');
-        }
-      } else {
-        console.log('Transaction not found or invalid response.');
-      }
-    });
-  }, 30000); // Wait for 30 seconds (adjust based on your testnet block time)
-}
 
 /**
  * Sends a timestamp and associated metadata to the blockchain.
@@ -133,31 +73,30 @@ const sendTimestampHash = (hashedTimestamp: string, hashedMetaData: string) => {
  * @param hash - The hash to validate on the blockchain.
  * @returns A promise that resolves with the response if the hash is found, or rejects with an error message.
  */
-// const isValid = (hash: string): Promise<Boolean> => {
-//   return new Promise((resolve, reject) => {
-//     MDS.cmd(`archive action:addresscheck address:0xDDEEDDEEDDEEDD statecheck:${hash}`, (res) => {
-//       if (res) {
-//         console.log('res', res);
-//         // TODO right now we only look for first, maybe we want to show more instances?
-//         if (res.coins.created.length > 0) {
-//           const hashOnChain = res.coins.created[0].coin.state[1].data;
-//           console.log('hashOnChain', hashOnChain);
-//           if (hash === hashOnChain) {
-//             resolve(true);
-//           }
-//         }
-//         resolve(false);
-//       } else {
-//         reject(false); // TODO can we do this
-//       }
-//     });
-//   });
-// };
+const isValid = (hash: string): Promise<Boolean> => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(`archive action:addresscheck address:0xDDEEDDEEDDEEDD statecheck:${hash}`, (res) => {
+      if (res) {
+        console.log('res', res);
+
+        if (res.coins.created.length > 0) {
+          const hashOnChain = res.coins.created[0].coin.state[1].data;
+          console.log('hashOnChain', hashOnChain);
+          if (hash === hashOnChain) {
+            resolve(true);
+          }
+        }
+        resolve(false);
+      } else {
+        reject(false);
+      }
+    });
+  });
+};
 
 export const commands = {
-  createTxn,
   hashData,
   sendTimestampHash,
   sendHashToChain,
-  checkHashOnChain,
+  isValid,
 };

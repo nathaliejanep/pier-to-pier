@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { config } from '../config/config';
 
-// TODO check if I should search testnet instead of API
 /**
  * Fetches block data from the API based on the provided hash.
  *

@@ -4,6 +4,13 @@ interface PublicKeys {
   deleted: string;
 }
 
+interface MinimaResponse {
+  status: boolean;
+  response: any;
+  error: any;
+  pending?: boolean;
+}
+
 interface BillOfLading {
   ID: string;
   INITIAL_HASH?: string;

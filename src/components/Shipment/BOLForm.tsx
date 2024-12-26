@@ -66,10 +66,7 @@ const BOLForm: React.FC = () => {
     // If the form is valid, send it to sql and create txn with state:hash
 
     try {
-      // TODO send resthash to blockchain below
       // const hashedData = await commands.hashData(formData);
-
-      // console.log('hashedData', hashedData);
       //   await commands.createTxn(hashedData);
 
       // Reset form
@@ -100,33 +97,25 @@ const BOLForm: React.FC = () => {
       const BOLData = await sql.getBOLById(formData.ID);
       const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData;
 
-      // const hashedTimestamp = await commands.hashData(CREATED_AT);
-
-      // TODO rename rest, Hash data from SQL to make sure it follows correct structure eveywhere
       const hashRest = await commands.hashData(rest);
 
-      // TODO fix this function and activate
+      // const hashedTimestamp = await commands.hashData(CREATED_AT);
       // const res = await commands.sendHashToChain(hashRest);
-      // console.log('RES send hah', res);
 
       await sql.updateBOLHash(hashRest, formData.ID);
 
-      // TODO Should be hashRest
+      // This is a mock function, it checks an API finding hashes on the mainnet
+      // Since this is a test node we are using a hash that exists on chain
       const blockData = await getBlockData(config.ABC_HASH);
+
       if (blockData.length > 0) {
         await sql.updateBOLHashIsValid(true, formData.ID);
       } else {
         await sql.updateBOLHashIsValid(false, formData.ID);
       }
-      console.log(blockData);
-      // TODO send mock function to send hash to "chain on test noe"
 
       // await commands.sendTimestampHash(hashedTimestamp, hashRest);
       // const isValid = await commands.isValid(hashRest);
-      // console.log('check', isValid);
-
-      // TODO add SHIPMENT_IS_VALID
-      console.log('Form submitted successfully with data: ', formData);
     } catch (err) {
       console.error('Error submitting BOL:', err);
     }
