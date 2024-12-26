@@ -2,7 +2,7 @@ import { BOLForm } from '../components/Shipment';
 
 const ShipmentNew: React.FC = () => {
   return (
-    <div className="my-[100px]">
+    <div className="my-[200px]">
       <BOLForm />
     </div>
   );

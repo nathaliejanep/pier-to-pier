@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
 import '../../styles/ShipmentForm.css';
+import React, { useContext, useState } from 'react';
 import { commands } from '../../server/mds';
 import { sql } from '../../server/database';
 import { appContext } from '../../AppContext';
@@ -43,7 +43,7 @@ const BOLForm: React.FC = () => {
     });
   };
 
-  const deployContract = async (BOLId: string, freightCharges: number, publicKeys: IPublicKeys) => {
+  const deployContract = async (BOLId: string, freightCharges: number, publicKeys: PublicKeys) => {
     try {
       const contractAddress = await contractSerivce.createContract(BOLId);
       const sendTxnRes = await contractSerivce.sendTxnState(

@@ -47,10 +47,10 @@ const Home: React.FC = () => {
         </div>
       </section>
       {/* About Section */}
-      <section id="about" className="bg-gray-100 py-20">
+      <section id="about" className="py-20 text-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-semibold text-gray-900 mb-6">About Pier2Pier</h2>
-          <p className="text-xl text-gray-700 mb-6">
+          <h2 className="text-3xl text-white font-semibold text-gray-900 mb-6">About Pier2Pier</h2>
+          <p className="text-xl mb-6">
             Pier2Pier is revolutionizing the logistics and supply chain industry by using blockchain
             technology. We provide a seamless and secure way to manage supply chain processes,
             improving transparency, efficiency, and trust.
