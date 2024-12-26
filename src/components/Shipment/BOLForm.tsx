@@ -4,11 +4,13 @@ import { commands } from '../../server/mds';
 import { sql } from '../../server/database';
 import { appContext } from '../../AppContext';
 import ContractService from '../../contracts/ContractService';
+import { getBlockData } from '../../utilities/api';
+import { config } from '../../config/config';
 
 const BOLForm: React.FC = () => {
   const contractSerivce = new ContractService();
   const { publicKeys } = useContext(appContext);
-
+  const [message, setMessage] = useState<string>('');
   const [formData, setFormData] = useState<BillOfLading>({
     ID: '1',
     SHIPPER_NAME: 'Bob',
@@ -44,7 +46,16 @@ const BOLForm: React.FC = () => {
   const deployContract = async (BOLId: string, freightCharges: number, publicKeys: IPublicKeys) => {
     try {
       const contractAddress = await contractSerivce.createContract(BOLId);
-      await contractSerivce.sendTxnState(contractAddress, freightCharges, publicKeys);
+      const sendTxnRes = await contractSerivce.sendTxnState(
+        contractAddress,
+        freightCharges,
+        publicKeys,
+      );
+
+      if (sendTxnRes.pending) {
+        console.log('sendTxnRes', sendTxnRes);
+        setMessage(`Transaction is pending, please accept `);
+      }
       return contractAddress;
     } catch (error) {
       console.error(`deployContract - ${error}`);
@@ -91,12 +102,26 @@ const BOLForm: React.FC = () => {
       const BOLData = await sql.getBOLById(formData.ID);
       const { INITIAL_HASH, CREATED_AT, ...rest } = BOLData;
 
-      // TODO This is not right
       // const hashedTimestamp = await commands.hashData(CREATED_AT);
 
-      // TODO rename rest
+      // TODO rename rest, Hash data from SQL to make sure it follows correct structure eveywhere
       const hashRest = await commands.hashData(rest);
+
+      // TODO fix this function and activate
+      // const res = await commands.sendHashToChain(hashRest);
+      // console.log('RES send hah', res);
+
       await sql.updateBOLHash(hashRest, formData.ID);
+
+      // TODO Should be hashRest
+      const blockData = await getBlockData(config.ABC_HASH);
+      if (blockData.length > 0) {
+        await sql.updateBOLHashIsValid(true, formData.ID);
+      } else {
+        await sql.updateBOLHashIsValid(false, formData.ID);
+      }
+      console.log(blockData);
+      // TODO send mock function to send hash to "chain on test noe"
 
       // await commands.sendTimestampHash(hashedTimestamp, hashRest);
       // const isValid = await commands.isValid(hashRest);
@@ -112,7 +137,8 @@ const BOLForm: React.FC = () => {
   return (
     <div id="form-container">
       <form onSubmit={handleSubmit}>
-        <div>
+        <h1 className="text-2xl pb-2">Bill of Lading</h1>
+        <div className="mt-4">
           <label htmlFor="ID">ID:</label>
           <input type="text" id="ID" name="ID" value={formData.ID} onChange={handleChange} />
         </div>
@@ -151,16 +177,6 @@ const BOLForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="GOODS_DESCRIPTION">GOODS DESCRIPTION:</label>
-          <textarea
-            id="GOODS_DESCRIPTION"
-            name="GOODS_DESCRIPTION"
-            value={formData.GOODS_DESCRIPTION}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
           <label htmlFor="CONTAINER_AMOUNT">CONTAINER AMOUNT:</label>
           <input
             type="number"
@@ -168,7 +184,6 @@ const BOLForm: React.FC = () => {
             name="CONTAINER_AMOUNT"
             value={formData.CONTAINER_AMOUNT}
             onChange={handleChange}
-            className="w-full p-2 border border-white rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             min="1"
             step="1"
           />
@@ -208,12 +223,17 @@ const BOLForm: React.FC = () => {
 
         <div className="mb-4">
           <label htmlFor="FREIGHT_CHARGES">FREIGHT CHARGES:</label>
-          <div id="FREIGHT_CHARGES" className="w-full p-2  text-white">
+          <div id="FREIGHT_CHARGES" className="w-full p-2 ">
             ${formData.FREIGHT_CHARGES}
           </div>
         </div>
 
-        <button type="submit">SUBMIT</button>
+        <button type="submit">SEND ORDER</button>
+        {message && (
+          <div>
+            <p className="text-center mt-6">{message}</p>
+          </div>
+        )}
       </form>
     </div>
   );

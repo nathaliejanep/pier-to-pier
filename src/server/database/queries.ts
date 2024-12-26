@@ -1,5 +1,4 @@
 import { runQuery } from './run-query';
-const table: string = 'portchain';
 
 export const sql = {
   createBOLTable: () =>
@@ -8,10 +7,12 @@ export const sql = {
       CREATE TABLE IF NOT EXISTS bills_of_lading (
         ID varchar(50),
         INITIAL_HASH varchar(1024) NOT NULL,
+        IS_VALID boolean,
         SHIPPER_NAME varchar(255),
         CONSIGNEE_NAME varchar(255),
         CARRIER_NAME varchar(255),
-        GOODS_DESCRIPTION text,
+        DEPOSIT_OUT boolean default FALSE,
+        PAYMENT_OUT boolean default FALSE,
         CONTAINER_AMOUNT int,
         PORT_OF_LOADING varchar(255),
         PORT_OF_DISCHARGE varchar(255),
@@ -29,6 +30,7 @@ export const sql = {
       CREATE TABLE IF NOT EXISTS event_logs (
         ID varchar(50),
         EVENT_HASH varchar(1024),
+        IS_VALID boolean,
         EVENT_PREVIOUS_HASH varchar(1024),
         BOL_ID int,
         EVENT_TYPE varchar(255),
@@ -46,7 +48,6 @@ export const sql = {
       SHIPPER_NAME,
       CONSIGNEE_NAME,
       CARRIER_NAME,
-      GOODS_DESCRIPTION,
       CONTAINER_AMOUNT,
       PORT_OF_LOADING,
       PORT_OF_DISCHARGE,
@@ -58,11 +59,11 @@ export const sql = {
       `
       INSERT INTO bills_of_lading (
         ID, 
-        INITIAL_HASH, 
+        INITIAL_HASH,
+        IS_VALID, 
         SHIPPER_NAME, 
         CONSIGNEE_NAME, 
         CARRIER_NAME,
-        GOODS_DESCRIPTION, 
         CONTAINER_AMOUNT, 
         PORT_OF_LOADING, 
         PORT_OF_DISCHARGE,
@@ -71,9 +72,18 @@ export const sql = {
         CONTRACT_ADDRESS
       )
       VALUES (
-        '${ID}', '${INITIAL_HASH}', '${SHIPPER_NAME}', '${CONSIGNEE_NAME}', '${CARRIER_NAME}',
-        '${GOODS_DESCRIPTION}', '${CONTAINER_AMOUNT}', '${PORT_OF_LOADING}', '${PORT_OF_DISCHARGE}',
-        '${FREIGHT_CHARGES}', '${CUSTOMS_DETAILS}', '${CONTRACT_ADDRESS}'
+        '${ID}', 
+        '${INITIAL_HASH}', 
+         NULL,
+        '${SHIPPER_NAME}', 
+        '${CONSIGNEE_NAME}', 
+        '${CARRIER_NAME}', 
+        '${CONTAINER_AMOUNT}', 
+        '${PORT_OF_LOADING}', 
+        '${PORT_OF_DISCHARGE}',
+        '${FREIGHT_CHARGES}', 
+        '${CUSTOMS_DETAILS}', 
+        '${CONTRACT_ADDRESS}'
       ) 
      `,
     );
@@ -86,6 +96,7 @@ export const sql = {
       INSERT INTO event_logs (
         ID,
         EVENT_PREVIOUS_HASH,
+        IS_VALID,
         BOL_ID,
         EVENT_TYPE,
         EVENT_DETAILS
@@ -93,6 +104,7 @@ export const sql = {
       VALUES (
         '${ID}',
         '${EVENT_PREVIOUS_HASH}',
+         NULL,
         '${BOL_ID}',
         '${EVENT_TYPE}',
         '${EVENT_DETAILS}'
@@ -101,22 +113,40 @@ export const sql = {
     );
   },
 
-  updateTable: (hash: string, id: string) =>
-    runQuery(
-      `
-          UPDATE ${table} SET
-          HASH = '${hash}',
-          WHERE ID = '${id}'
-          `,
-    ),
-
   updateBOLHash: (hash: string, id: string) =>
     runQuery(
       `
+        UPDATE bills_of_lading SET
+        INITIAL_HASH = '${hash}'
+        WHERE ID = '${id}'
+      `,
+    ),
+
+  updateBOLHashIsValid: (isValid: Boolean, id: string) =>
+    runQuery(
+      `
           UPDATE bills_of_lading SET
-          INITIAL_HASH = '${hash}'
+          IS_VALID = '${isValid}'
           WHERE ID = '${id}'
-          `,
+        `,
+    ),
+
+  updateBOLDepositOut: (id: string) =>
+    runQuery(
+      `
+          UPDATE bills_of_lading SET
+          DEPOSIT_OUT = TRUE
+          WHERE ID = '${id}'
+        `,
+    ),
+
+  updateBOLPaymentOut: (id: string) =>
+    runQuery(
+      `
+          UPDATE bills_of_lading SET
+          PAYMENT_OUT = TRUE
+          WHERE ID = '${id}'
+        `,
     ),
 
   updateEventHash: (hash: string, id: string) =>
@@ -128,7 +158,15 @@ export const sql = {
           `,
     ),
 
-  getRecords: () => runQuery(`SELECT * FROM ${table}`),
+  updateEventHashIsValid: (isValid: Boolean, id: string) =>
+    runQuery(
+      `
+          UPDATE event_logs SET
+          IS_VALID = '${isValid}'
+          WHERE ID = '${id}'
+        `,
+    ),
+
   getBOLRecords: () => runQuery(`SELECT * FROM bills_of_lading`),
   getEventRecords: () => runQuery(`SELECT * FROM event_logs`),
 
@@ -137,23 +175,27 @@ export const sql = {
         SELECT * FROM bills_of_lading
         WHERE ID = '${bolId}'
 `),
+
   getEventsByBOLId: (bolId: string) =>
     runQuery(
       `
         SELECT
           b.ID AS BOL_ID,
           b.FREIGHT_CHARGES,
+          b.DEPOSIT_OUT,
+          b.PAYMENT_OUT,
           b.SHIPPER_NAME,
           b.CONSIGNEE_NAME,
           b.CARRIER_NAME,
-          b.GOODS_DESCRIPTION,
           b.CONTAINER_AMOUNT,
           b.PORT_OF_LOADING,
           b.PORT_OF_DISCHARGE,
           b.INITIAL_HASH,
+          b.IS_VALID as BOL_IS_VALID,
           b.CONTRACT_ADDRESS,
           e.ID AS EVENT_ID,
           e.EVENT_HASH,
+          e.IS_VALID as EVENT_IS_VALID,
           e.EVENT_TYPE,
           e.EVENT_DETAILS,
           e.EVENT_PREVIOUS_HASH,

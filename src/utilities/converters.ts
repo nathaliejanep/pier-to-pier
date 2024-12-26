@@ -10,4 +10,10 @@ const toTimestampFormat = (dtString: string): number => {
   return date.getTime() / 1000; // Convert milliseconds to seconds for Unix timestamp.
 };
 
-export { toTimestampFormat };
+const stringToBoolean = (boolString: String) => {
+  let boolValue = boolString === 'true';
+
+  console.log(boolValue); // true
+  return boolValue;
+};
+export { stringToBoolean, toTimestampFormat };

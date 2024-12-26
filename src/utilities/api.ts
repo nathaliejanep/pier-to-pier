@@ -14,7 +14,7 @@ import { config } from '../config/config';
 const getBlockData = async (hash: string) => {
   try {
     const res = await axios.get(`${config.API_GET_BLOCK_URL}/search?q=${hash}`);
-    return res.data;
+    return res.data.results;
   } catch (err) {
     console.error(`Failed to fetch block data for hash: ${hash}`, err);
   }

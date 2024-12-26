@@ -45,6 +45,65 @@ const hashData = (metaData: BillOfLading | any): Promise<string> => {
   });
 };
 
+const sendHashToChain = (hash) => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(`send address:0x00 amount:0.0000001 state:{"0":"${hash}"}`, (res) => {
+      if (res) {
+        // checkHashOnChain(res.response.txpowid, hash);
+        resolve(res);
+
+        if (res.pending) {
+          MDS.init((msg: any) => {
+            console.log(msg);
+            // if (msg.event === 'MDS_PENDING') {
+            //   console.log('Pending uid: ', msg.event.data.uid);
+            //   resolve(msg.event.data.uid);
+            // }
+          });
+        }
+        console.log('Send hash to chain response:', res);
+      } else {
+        reject('Failed to get send hash');
+      }
+    });
+  });
+
+  // Create a transaction with minimal amount and the hash as state data
+  // var command = `send address:0x00 amount:0.0000001 state:{"0":"${hash}"}`;
+
+  // MDS.cmd(command, function (res) {
+  //   if (res.status) {
+  //     console.log('Transaction sent. TxPOWID:', res.response.txpowid);
+  //     // Store this txpowid for later use
+  //     checkHashOnChain(res.response.txpowid, hash);
+  //   } else {
+  //     console.error('Failed to send transaction:', res.error);
+  //   }
+  // });
+};
+
+function checkHashOnChain(txpowid, hash) {
+  // Wait for a few blocks to ensure the transaction is confirmed
+  setTimeout(function () {
+    MDS.cmd(`txpow txpowid:${txpowid}`, function (res) {
+      if (res.status && res.response.body && res.response.body.txn) {
+        var stateVars = res.response.body.txn.state;
+        var hashFound = stateVars.some(function (stateVar) {
+          return stateVar.data === hash;
+        });
+
+        if (hashFound) {
+          console.log('Hash found on chain!');
+        } else {
+          console.log('Hash not found in transaction state.');
+        }
+      } else {
+        console.log('Transaction not found or invalid response.');
+      }
+    });
+  }, 30000); // Wait for 30 seconds (adjust based on your testnet block time)
+}
+
 /**
  * Sends a timestamp and associated metadata to the blockchain.
  *
@@ -99,4 +158,6 @@ export const commands = {
   createTxn,
   hashData,
   sendTimestampHash,
+  sendHashToChain,
+  checkHashOnChain,
 };

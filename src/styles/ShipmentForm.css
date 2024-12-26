@@ -10,10 +10,9 @@
 
 /* Form Container */
 form {
-  background-color: rgb(51, 49, 49);
+  background-color: rgb(225, 225, 230);
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 800px;
   max-width: 100%;
 }
@@ -26,36 +25,38 @@ form div {
 /* Labels */
 label {
   display: block;
-  font-size: 14px;
-  color: #eeeaea;
+  font-size: 16px;
+  color: #000317;
   margin-bottom: 5px;
 }
 input,
 textarea,
 select {
-  background-color: rgb(51, 49, 49);
+  background-color: rgb(225, 225, 230);
 }
 /* Input Fields */
 input[type='text'],
 input[type='email'],
 input[type='date'],
+input[type='number'],
 textarea,
 select {
   width: 100%;
   padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
+  font-size: 16px;
+  border: 1px solid #9f9e9e;
   border-radius: 4px;
   margin-top: 5px;
-  color: #eeeaea;
+  color: #000317;
 }
 
 input[type='text']:focus,
 input[type='email']:focus,
 input[type='date']:focus,
+input[type='number']:focus,
 textarea:focus,
 select:focus {
-  border-color: #4caf50;
+  border-color: #061d61;
   outline: none;
 }
 
@@ -69,14 +70,10 @@ textarea {
 button {
   width: 100%;
   padding: 10px;
-  background-color: #0f180f !important;
-  color: white;
+  background-color: #000317 !important;
+  color: #ccc;
   font-size: 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-}
-
-form button:hover {
-  background-color: #45a049;
 }

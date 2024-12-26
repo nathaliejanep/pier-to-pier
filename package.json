@@ -13,6 +13,10 @@
     "zip": "npm run build && npm run postbuild && npm run package"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.3.0",
+    "@mui/material": "^6.3.0",
     "@vitejs/plugin-legacy": "^4.1.1",
     "@vitejs/plugin-react-swc": "^3.4.1",
     "autoprefixer": "^10.4.16",

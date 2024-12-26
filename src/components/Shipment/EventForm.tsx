@@ -5,6 +5,8 @@ import { sql } from '../../server/database';
 import { v4 as uuidv4 } from 'uuid';
 import ContractService from '../../contracts/ContractService';
 import { appContext } from '../../AppContext';
+import { commands } from '../../server/mds';
+import React from 'react';
 
 const EventForm: React.FC = () => {
   const [BOLDataList, setBOLDataList] = useState<BillOfLading[]>([]);
@@ -23,15 +25,15 @@ const EventForm: React.FC = () => {
   }, [formData.BOL_ID]);
 
   useEffect(() => {
-    fetchBlockData();
+    // fetchBlockData();
     getShipments();
   }, []);
 
-  const fetchBlockData = async () => {
-    // TODO findHash in API
-    const blockData = await getBlockData(config.ABC_HASH);
-    console.log('blockData', blockData);
-  };
+  // const fetchBlockData = async () => {
+  //   // TODO findHash in API
+  //   const blockData = await getBlockData(config.ABC_HASH);
+  //   console.log('blockData', blockData);
+  // };
 
   const getShipments = async () => {
     const BOLData = await sql.getBOLRecords();
@@ -107,19 +109,26 @@ const EventForm: React.FC = () => {
         const latestEvent = await sql.getLatestEventByBOLId(formData.BOL_ID);
         console.log('latestEvent', latestEvent);
         // TODO probably use hash instead of PREV ID
-        const eventWithPreviousId = {
+        const eventPreviousHash = {
           ...formData,
           EVENT_PREVIOUS_HASH: latestEvent.length > 0 ? latestEvent[0]?.EVENT_HASH : null,
         };
-        sql.insertRecordEvent(eventWithPreviousId);
+
+        sql.insertRecordEvent(eventPreviousHash);
 
         if (formData.ID) {
           const event = await sql.getEventById(formData.ID);
           // console.log('event', event);
           // const eventTime = event[0].CREATED_AT; // TODO rename in SQL
           // const hashedTimestamp = await commands.hashData(eventTime);
-          // const hashedEvent = await commands.hashData(event);
-          // await sql.updateEventHash(hashedEvent, formData.ID);
+          const hashedEvent = await commands.hashData(event);
+          await sql.updateEventHash(hashedEvent, formData.ID);
+
+          const blockData = await getBlockData(config.ABC_HASH);
+          if (blockData.length > 0) {
+            await sql.updateEventHashIsValid(true, formData.ID);
+          }
+
           // await commands.sendTimestampHash(hashedTimestamp, hashedEvent);
           // const isValid = await commands.isValid(hashedEvent);
           // console.log('check', isValid);
@@ -136,6 +145,7 @@ const EventForm: React.FC = () => {
         EVENT_DETAILS: '',
       });
 
+      // send hash to chain
       // TODO send message to UI
       console.log('Form submitted successfully with data: ', formData);
     } catch (error) {
@@ -144,8 +154,9 @@ const EventForm: React.FC = () => {
   };
 
   return (
-    <div id="event-log-form-container">
+    <div id="form-container">
       <form onSubmit={handleSubmit}>
+        <h1 className="text-2xl pb-4">Log Event</h1>
         <div>
           <label htmlFor="BOL_ID">Shipment ID:</label>
           <select
