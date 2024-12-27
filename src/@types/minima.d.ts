@@ -9,6 +9,7 @@ interface MinimaResponse {
   response: any;
   error: any;
   pending?: boolean;
+  pendinguid?: any;
 }
 
 interface BillOfLading {
@@ -40,6 +41,7 @@ interface EventLog {
 interface TransactionResponse {
   status: boolean;
   pendinguid: string;
+  pending: boolean;
   response?: {
     txpowid: string;
     // Add other fields

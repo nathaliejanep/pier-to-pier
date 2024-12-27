@@ -1,4 +1,5 @@
 import '../../styles/ShipmentForm.css';
+import { v4 as uuidv4 } from 'uuid';
 import React, { useContext, useState } from 'react';
 import { commands } from '../../server/mds';
 import { sql } from '../../server/database';
@@ -7,12 +8,17 @@ import ContractService from '../../contracts/ContractService';
 import { getBlockData } from '../../utilities/api';
 import { config } from '../../config/config';
 
+const generateNumericID = () => {
+  const uuid = uuidv4();
+  return uuid.replace(/\D/g, '').slice(0, 5); // Remove non-numeric characters and truncate to 10 digits
+};
+
 const BOLForm: React.FC = () => {
   const contractSerivce = new ContractService();
   const { publicKeys } = useContext(appContext);
   const [message, setMessage] = useState<string>('');
   const [formData, setFormData] = useState<BillOfLading>({
-    ID: '1',
+    ID: generateNumericID(),
     SHIPPER_NAME: 'Bob',
     CONSIGNEE_NAME: 'Alice',
     CARRIER_NAME: 'Maersk',
@@ -52,14 +58,32 @@ const BOLForm: React.FC = () => {
       );
 
       if (sendTxnRes.pending) {
-        console.log('sendTxnRes', sendTxnRes);
-        setMessage(`Transaction is pending, please accept `);
+        while (await commands.checkPendingTransaction(sendTxnRes.pendinguid)) {
+          setMessage(
+            `Transaction is pending. Please confirm transaction in the 'Pending' MiniDapp.`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before checking again
+        }
       }
       return contractAddress;
     } catch (error) {
       console.error(`deployContract - ${error}`);
     }
   };
+
+  // const waitForSendableBalance = async (requiredAmount, maxWaitTime = 300000) => {
+  //   // maxWaitTime default 5 minutes
+  //   const startTime = Date.now();
+  //   setLoading(true);
+  //   while (Date.now() - startTime < maxWaitTime) {
+  //     const balance = await commands.getSendableBalance();
+  //     if (balance && balance >= requiredAmount) {
+  //       return true;
+  //     }
+  //     await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds before checking again
+  //   }
+  //   throw new Error('Timeout waiting for sendable balance');
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +112,7 @@ const BOLForm: React.FC = () => {
         +formData.FREIGHT_CHARGES,
         publicKeys,
       );
+      console.log(contractAddress);
 
       sql.insertRecordBOL({
         ...formData,
@@ -99,6 +124,19 @@ const BOLForm: React.FC = () => {
 
       const hashRest = await commands.hashData(rest);
 
+      // await waitForSendableBalance(parseFloat('0.000000000001'));
+      // console.log('Balance is now sendable. Proceeding with second transaction.');
+
+      // const sendHash = await commands.sendHashToChain(hashRest);
+
+      // if (sendHash.pending) {
+      //   console.log('Please confirm the second transaction in the Pending Actions.');
+      //   setMessage('Please confirm the second transaction in the Pending Actions.');
+      //   while (await commands.checkPendingTransaction(sendHash.pendinguid)) {
+      //     console.log('Second transaction still pending. Waiting...');
+      //     await new Promise((resolve) => setTimeout(resolve, 5000));
+      //   }
+      // }
       // const hashedTimestamp = await commands.hashData(CREATED_AT);
       // const res = await commands.sendHashToChain(hashRest);
 
@@ -108,12 +146,16 @@ const BOLForm: React.FC = () => {
       // Since this is a test node we are using a hash that exists on chain
       const blockData = await getBlockData(config.ABC_HASH);
 
+      // const isValid = await commands.getCoinStates(hashRest);
+      // await sql.updateBOLHashIsValid(isValid, formData.ID);
+
       if (blockData.length > 0) {
         await sql.updateBOLHashIsValid(true, formData.ID);
       } else {
         await sql.updateBOLHashIsValid(false, formData.ID);
       }
 
+      setMessage(`Successfully sent ${formData.FREIGHT_CHARGES} M`);
       // await commands.sendTimestampHash(hashedTimestamp, hashRest);
       // const isValid = await commands.isValid(hashRest);
     } catch (err) {
@@ -125,10 +167,6 @@ const BOLForm: React.FC = () => {
     <div id="form-container">
       <form onSubmit={handleSubmit}>
         <h1 className="text-2xl pb-2">Bill of Lading</h1>
-        <div className="mt-4">
-          <label htmlFor="ID">ID:</label>
-          <input type="text" id="ID" name="ID" value={formData.ID} onChange={handleChange} />
-        </div>
 
         <div>
           <label htmlFor="SHIPPER_NAME">SHIPPER NAME:</label>
@@ -198,16 +236,6 @@ const BOLForm: React.FC = () => {
           />
         </div>
 
-        <div>
-          <label htmlFor="CUSTOMS_DETAILS">CUSTOMS DETAILS:</label>
-          <textarea
-            id="CUSTOMS_DETAILS"
-            name="CUSTOMS_DETAILS"
-            value={formData.CUSTOMS_DETAILS}
-            onChange={handleChange}
-          />
-        </div>
-
         <div className="mb-4">
           <label htmlFor="FREIGHT_CHARGES">FREIGHT CHARGES:</label>
           <div id="FREIGHT_CHARGES" className="w-full p-2 ">
@@ -216,6 +244,7 @@ const BOLForm: React.FC = () => {
         </div>
 
         <button type="submit">SEND ORDER</button>
+
         {message && (
           <div>
             <p className="text-center mt-6">{message}</p>

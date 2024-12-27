@@ -22,6 +22,62 @@ const sendHashToChain = (hash: string): Promise<TransactionResponse> => {
   });
 };
 
+function checkPendingTransaction(pendinguid) {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(`checkpending uid:${pendinguid}`, function (res) {
+      if (res.status) {
+        resolve(res.response.pending);
+      } else {
+        reject('Failed to check pending status: ' + res.error);
+      }
+    });
+  });
+}
+
+const getSendableBalance = () => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd('balance', function (res) {
+      if (res.status) {
+        const minimaToken = res.response.find((token) => token.tokenid === '0x00');
+        if (minimaToken) {
+          resolve(parseFloat(minimaToken.sendable));
+        } else {
+          reject('Minima token not found in balance');
+        }
+      } else {
+        reject('Failed to get balance: ' + res.error);
+      }
+    });
+  });
+};
+
+const getCoinStates = (hash: string): Promise<Boolean> => {
+  return new Promise((resolve, reject) => {
+    MDS.cmd(`coins address:${config.PIER2PIER_TREASURY}`, (res) => {
+      if (res) {
+        const found = processCoinStates(res.response, hash);
+        resolve(found);
+        console.log('getCoinStates response:', res);
+      } else {
+        reject('Failed to find');
+      }
+    });
+  });
+};
+
+function processCoinStates(coins, hash: string) {
+  let found = false;
+  coins.forEach((coin) => {
+    if (coin.state && coin.state.length > 0) {
+      const state99 = coin.state.find((state) => state.port === 99 && state.data === hash);
+      if (state99) {
+        found = true;
+      }
+    }
+  });
+  return found;
+}
+
 /**
  * Hashes metadata.
  * @param {ShippingFormData} metaData The data to be hashed.
@@ -95,6 +151,9 @@ const isValid = (hash: string): Promise<Boolean> => {
 };
 
 export const commands = {
+  checkPendingTransaction,
+  getCoinStates,
+  getSendableBalance,
   hashData,
   sendTimestampHash,
   sendHashToChain,

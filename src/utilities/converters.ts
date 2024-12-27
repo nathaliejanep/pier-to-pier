@@ -13,7 +13,6 @@ const toTimestampFormat = (dtString: string): number => {
 const stringToBoolean = (boolString: String) => {
   let boolValue = boolString === 'true';
 
-  console.log(boolValue); // true
   return boolValue;
 };
 export { stringToBoolean, toTimestampFormat };

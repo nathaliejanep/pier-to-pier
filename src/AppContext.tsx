@@ -11,11 +11,13 @@ interface IProps {
 const AppProvider = ({ children }: IProps) => {
   const [publicKeys, setPublicKeys] = useState<PublicKeys>({ buyer: '', seller: '', deleted: '' });
   const loaded = useRef(false);
-  console.log('publicKeys', publicKeys);
   const contractService = new ContractService();
+
   const createTables = async () => {
     await sql.createBOLTable();
     await sql.createEventLogTable();
+    // await sql.dropTable('event_logs');
+    // await sql.dropTable('bills_of_lading');
   };
 
   useEffect(() => {

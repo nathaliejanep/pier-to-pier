@@ -12,6 +12,7 @@ const ShipmentDetails: React.FC = () => {
   const [shipmentEventData, setShipmentEventData] = useState<any | null>(null);
   const [depositPaid, setDepositPaid] = useState(false);
   const [paymentPaid, setPaymentPaid] = useState(false);
+  const [message, setMessage] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +55,7 @@ const ShipmentDetails: React.FC = () => {
       await ContractService.createTxnId(txnId);
       await ContractService.contractInput(txnId, contractAddress);
 
-      // Output to seller
+      // Output to seller address
       await ContractService.contractOutput(
         txnId,
         depositAmount,
@@ -74,7 +75,7 @@ const ShipmentDetails: React.FC = () => {
       await ContractService.inputTxnState(txnId, 6, publicKeys.deleted);
 
       await ContractService.sign(txnId, publicKeys.seller);
-
+      setMessage(`Successfully sent deposit: ${+shipmentEventData[0].FREIGHT_CHARGES / 4}`);
       setDepositPaid(true);
       id && (await sql.updateBOLDepositOut(id));
     } catch (error) {
@@ -102,6 +103,7 @@ const ShipmentDetails: React.FC = () => {
 
       await ContractService.sign(txnId, publicKeys.seller);
 
+      setMessage(`Successfully sent freight charges: ${shipmentEventData[0].FREIGHT_CHARGES}`);
       setPaymentPaid(true);
       id && (await sql.updateBOLPaymentOut(id));
     } catch (error) {
@@ -130,13 +132,24 @@ const ShipmentDetails: React.FC = () => {
       case 'InTransit':
         return (
           !stringToBoolean(depositOut) &&
-          !depositPaid && <button onClick={withdrawDeposit}>Withdraw Deposit</button>
+          !depositPaid && (
+            <>
+              <button onClick={withdrawDeposit} className="mt-4">
+                Withdraw Deposit
+              </button>
+              <p>{message}</p>
+            </>
+          )
         );
 
       case 'Delivered':
         return (
           !stringToBoolean(paymentOut) &&
-          !paymentPaid && <button onClick={withdrawFunds}>Withdraw</button>
+          !paymentPaid && (
+            <button onClick={withdrawFunds} className="mt-4">
+              Withdraw
+            </button>
+          )
         );
 
       default:
@@ -161,11 +174,19 @@ const ShipmentDetails: React.FC = () => {
                       <td className="px-4 py-2 text-gray-600">{shipmentEventData[0].BOL_ID}</td>
                     </tr>
                     <tr className="border-b">
+                      <td className="no-wrap  px-4 py-2 font-medium text-gray-700">Deposit:</td>
+                      <td className="px-4 py-2 text-gray-600">
+                        {+shipmentEventData[0].FREIGHT_CHARGES / 4}{' '}
+                        {stringToBoolean(shipmentEventData[0].DEPOSIT_OUT) && '(paid)'}
+                      </td>
+                    </tr>
+                    <tr className="border-b">
                       <td className="no-wrap  px-4 py-2 font-medium text-gray-700">
                         Freight Charges:
                       </td>
                       <td className="px-4 py-2 text-gray-600">
-                        {shipmentEventData[0].FREIGHT_CHARGES}
+                        {shipmentEventData[0].FREIGHT_CHARGES}{' '}
+                        {stringToBoolean(shipmentEventData[0].PAYMENT_OUT) && '(paid)'}
                       </td>
                     </tr>
                     <tr className="border-b">
@@ -234,13 +255,6 @@ const ShipmentDetails: React.FC = () => {
                 </table>
               </div>
             </div>
-            <div>
-              {renderWithdrawBtns(
-                shipmentEventData[shipmentEventData.length - 1].EVENT_TYPE, // Last item's EVENT_TYPE
-                shipmentEventData[0].DEPOSIT_OUT,
-                shipmentEventData[0].PAYMENT_OUT,
-              )}
-            </div>
           </div>
         )}
 
@@ -291,6 +305,13 @@ const ShipmentDetails: React.FC = () => {
               )}
             </ul>
           )}
+          <div>
+            {renderWithdrawBtns(
+              shipmentEventData[shipmentEventData.length - 1].EVENT_TYPE, // Last item's EVENT_TYPE
+              shipmentEventData[0].DEPOSIT_OUT,
+              shipmentEventData[0].PAYMENT_OUT,
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import React from 'react';
 
 const EventForm: React.FC = () => {
   const [BOLDataList, setBOLDataList] = useState<BillOfLading[]>([]);
+  const [message, setMessage] = useState<string>('');
   const [formData, setFormData] = useState<EventLog>({
     ID: uuidv4(),
     BOL_ID: '',
@@ -41,12 +42,12 @@ const EventForm: React.FC = () => {
     try {
       if (formData.BOL_ID) {
         const latestEvent = await sql.getLatestEventByBOLId(formData.BOL_ID);
+        console.log('latestEvent', latestEvent);
 
         const eventPreviousHash = {
           ...formData,
           EVENT_PREVIOUS_HASH: latestEvent.length > 0 ? latestEvent[0]?.EVENT_HASH : null,
         };
-
         sql.insertRecordEvent(eventPreviousHash);
 
         if (formData.ID) {
@@ -67,15 +68,19 @@ const EventForm: React.FC = () => {
           // const isValid = await commands.isValid(hashedEvent);
           // console.log('check', isValid);
         }
+
+        setMessage('Successfully added event');
       }
 
       // Reset form
       setFormData({
+        ID: uuidv4(),
         BOL_ID: '',
-        EVENT_TYPE: 'Departure',
+        EVENT_TYPE: '',
         EVENT_DETAILS: '',
       });
     } catch (error) {
+      setMessage('Something went wrong');
       console.error('Failed to log event: ', error);
     }
   };
@@ -113,8 +118,6 @@ const EventForm: React.FC = () => {
           >
             <option value="Departure">Departure</option>
             <option value="InTransit">In Transit</option>
-            <option value="Arrival">Arrival</option>
-            <option value="Cleared">Cleared</option>
             <option value="Delivered">Delivered</option>
           </select>
         </div>
@@ -131,6 +134,7 @@ const EventForm: React.FC = () => {
         </div>
 
         <button type="submit">Log Event</button>
+        {message && <p className="mt-4 text-center">{message}</p>}
       </form>
     </div>
   );
